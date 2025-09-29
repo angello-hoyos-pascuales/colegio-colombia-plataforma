@@ -1,183 +1,140 @@
-<<<<<<< HEAD
-# 🎓 Plataforma Estudiantil Web - Colegio Colombia
+# 🎓 Colegio Colombia - Plataforma Educativa
 
-## ✅ PROYECTO COMPLETADO - 100% FUNCIONAL
+Una plataforma web completa para la gestión educativa desarrollada con Flask y SQLite.
 
-Una plataforma educativa completa desarrollada con Python/Flask que incluye gestión de usuarios, cursos, tareas y un sistema avanzado de horarios en tiempo real con detección automática de ausencias y asignación de reemplazos.
+## ✨ Características
 
-## 🚀 INICIO RÁPIDO
+- **Sistema de Usuarios**: Administradores, profesores y estudiantes
+- **Gestión de Cursos**: Grados 6º a 11º con secciones A y B  
+- **Calificaciones**: Sistema completo por períodos académicos
+- **Horarios**: Gestión de horarios y asignaturas
+- **Dashboard**: Paneles personalizados por rol de usuario
 
-### 1. Iniciar el Servidor
-```bash
-"C:/Users/angeh/Desktop/proyecto platafroma/.venv/Scripts/python.exe" app.py
-```
-
-### 2. Acceder a la Plataforma
-- **URL Principal:** http://127.0.0.1:5000
-- **Login Simplificado:** http://127.0.0.1:5000/simple-login
-
-### 3. Credenciales de Acceso
-
-#### 👨‍💼 Administrador
-- **Email:** admin@colegiocolombia.edu.co
-- **Contraseña:** admin123
-
-#### 👨‍🏫 Profesores
-- **Email:** maria.garcia@colegiocolombia.edu.co
-- **Contraseña:** profesor123
-
-#### 🎓 Estudiantes  
-- **Email:** juan.pérez@estudiante.colegiocolombia.edu.co
-- **Contraseña:** estudiante123
-
-## 📊 CARACTERÍSTICAS IMPLEMENTADAS
-
-### ✅ Fase 1: Plataforma Básica Completa
-- **Arquitectura:** Python/Flask + SQLite + Bootstrap 5
-- **Autenticación:** Sistema completo con Flask-Login
-- **Roles:** Administrador, Profesor, Estudiante
-- **Usuarios:** 24 usuarios configurados
-- **Cursos:** Grados 6º-11º con secciones A/B
-- **Asignaturas:** 142 materias asignadas
-- **Sistema de calificaciones:** 0.0-5.0 por periodos
-
-### ✅ Fase 2: Módulo Horario Tiempo Real
-- **Detección:** Sistema automático de ausencias
-- **Algoritmo:** Búsqueda inteligente de reemplazos
-- **Notificaciones:** Alertas en tiempo real
-- **Horarios:** 360 clases programadas semanalmente
-- **Dashboard:** Panel de control administrativo completo
-
-## 🎯 Funcionalidades Principales
-📋 Dashboard personalizado por rol  
-👥 Gestión completa de usuarios  
-🏫 Administración de cursos y grados  
-📚 Asignación de materias por profesor  
-📝 Sistema de tareas con entregas  
-📊 Calificaciones por periodos académicos  
-⏰ Horarios dinámicos con detección de ausencias  
-🔄 Sistema automático de reemplazos  
-📱 Interfaz responsive y moderna
-
----
-
-¡La plataforma está **100% funcional** y lista para su uso inmediato! 🚀📚✨
-- **Identificación Colombiana**: Soporte para T.I. y C.C.
-
-### Fase 2: Módulo de Horario en Tiempo Real
-- **Detección Automática**: Identificación de ausencias de profesores
-- **Algoritmo de Reemplazo**: Búsqueda automática de profesores disponibles
-- **Notificaciones**: Sistema de alertas en tiempo real
-
-## Instalación
+## 🚀 Instalación
 
 ### Prerrequisitos
-- **Python 3.8 o superior** instalado en el sistema
-- **Git** (opcional, para clonar el proyecto)
+- Python 3.8+
+- pip
 
 ### Pasos de instalación
 
-1. **Verificar Python:**
+1. **Clonar el repositorio**
 ```bash
-python --version
-# o en algunos sistemas:
-python3 --version
+git clone https://github.com/angello-hoyos-pascuales/colegio-colombia-plataforma.git
+cd colegio-colombia-plataforma
 ```
 
-2. **Instalar Python (si no está instalado):**
-   - **Windows:** Descargar desde [python.org](https://python.org) o usar Microsoft Store
-   - **Linux/Mac:** `sudo apt install python3 python3-pip` o `brew install python3`
-
-3. **Crear entorno virtual:**
+2. **Crear entorno virtual (recomendado)**
 ```bash
-# Windows
 python -m venv venv
-venv\Scripts\activate
-
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # En Windows: venv\Scripts\activate
 ```
 
-4. **Instalar dependencias:**
+3. **Instalar dependencias**
 ```bash
 pip install -r requirements.txt
 ```
 
-5. **Inicializar base de datos:**
+4. **Inicializar base de datos**
 ```bash
 python init_db.py
+python poblar_colegio.py
 ```
 
-6. **Ejecutar la aplicación:**
+5. **Ejecutar aplicación**
 ```bash
 python app.py
 ```
 
-La aplicación estará disponible en `http://localhost:5000`
+La aplicación estará disponible en: http://127.0.0.1:5000
 
-### Solución de problemas comunes
-
-- **Error "Python no encontrado":**
-  - Verificar que Python esté instalado
-  - Agregar Python al PATH del sistema
-  - Usar `python3` en lugar de `python` en sistemas Linux/Mac
-
-- **Error de permisos:**
-  - Ejecutar terminal como administrador (Windows)
-  - Usar `sudo` cuando sea necesario (Linux/Mac)
-
-- **Error de dependencias:**
-  - Actualizar pip: `python -m pip install --upgrade pip`
-  - Instalar dependencias una por una si falla el requirements.txt
-
-## Estructura del Proyecto
-
-```
-proyecto-platafroma/
-├── app.py                  # Aplicación principal Flask
-├── config.py              # Configuración de la aplicación
-├── models.py               # Modelos de base de datos
-├── forms.py                # Formularios WTForms
-├── init_db.py             # Inicialización de base de datos
-├── requirements.txt        # Dependencias
-├── static/                 # Archivos estáticos (CSS, JS, imágenes)
-├── templates/              # Plantillas HTML
-├── uploads/                # Archivos subidos por usuarios
-└── database.db            # Base de datos SQLite (se crea automáticamente)
-```
-
-## Roles y Funcionalidades
+## 🔑 Credenciales por Defecto
 
 ### Administrador
-- Gestión completa de usuarios
-- Configuración de cursos y horarios
-- Monitoreo del sistema de reemplazo de profesores
-- Reportes y estadísticas
+- **Email**: admin@colegiocolombia.edu.co
+- **Contraseña**: admin123
 
-### Profesores
-- Gestión de tareas y calificaciones
-- Acceso a listas de estudiantes
-- Sistema de notificaciones
-- Confirmación de reemplazos
+### Profesor (ejemplo)
+- **Email**: gonzalo.torres@colegiocolombia.edu.co
+- **Contraseña**: profesor123
 
-### Estudiantes
-- Visualización de horarios y tareas
-- Entrega de documentos (PDF, DOCX)
-- Consulta de calificaciones
-- Recepción de notificaciones
+### Estudiante (ejemplo)
+- **Email**: jessica.sanchez@estudiante.colegiocolombia.edu.co
+- **Contraseña**: estudiante123
 
-## Tecnologías Utilizadas
+## 📊 Datos Incluidos
 
-- **Backend**: Python, Flask
-- **Base de Datos**: SQLite
-- **Frontend**: HTML5, CSS3, JavaScript
+La plataforma viene pre-poblada con:
+- 👥 **63 usuarios** (1 admin, 14 profesores, 48 estudiantes)
+- 📚 **12 cursos** distribuidos en 6 grados
+- 📖 **112 asignaturas** con profesores asignados
+- 📊 **1,344 calificaciones** de 3 períodos académicos
+- 🕐 **289 horarios** académicos
+
+## 💻 Tecnologías
+
+- **Backend**: Python Flask 3.0
+- **Base de datos**: SQLite con SQLAlchemy ORM
+- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5
 - **Autenticación**: Flask-Login
-- **Formularios**: Flask-WTF, WTForms
 
-## Contribución
+## 📁 Estructura del Proyecto
 
-Este proyecto está diseñado para ser ejecutado localmente en un entorno de desarrollo y pruebas para el Colegio Colombia.
-=======
-# colegio-colombia-plataforma
->>>>>>> b5f952e8ce73624c63d21a0c3a5aa3835ffcf40f
+```
+colegio-colombia-plataforma/
+├── app.py              # Aplicación principal Flask
+├── models.py           # Modelos de base de datos
+├── forms.py            # Formularios WTF
+├── config.py           # Configuración
+├── init_db.py          # Inicializador de BD
+├── poblar_colegio.py   # Datos de ejemplo
+├── requirements.txt    # Dependencias
+├── static/             # CSS, JS, imágenes
+├── templates/          # Plantillas HTML
+└── routes/             # Rutas organizadas por módulo
+```
+
+## 🌟 Funcionalidades Principales
+
+### Para Administradores
+- Dashboard con estadísticas generales
+- Gestión completa de usuarios
+- Configuración de cursos y asignaturas
+- Supervisión de horarios
+
+### Para Profesores
+- Panel de control personalizado
+- Gestión de asignaturas asignadas
+- Creación y calificación de tareas
+- Registro de calificaciones
+
+### Para Estudiantes
+- Vista de cursos y horarios
+- Acceso a tareas y entregas
+- Consulta de calificaciones
+- Seguimiento del progreso académico
+
+## 🚀 Despliegue
+
+Para producción, considera:
+- Usar un servidor WSGI como Gunicorn
+- Configurar una base de datos más robusta (PostgreSQL)
+- Implementar HTTPS
+- Configurar variables de entorno para credenciales
+
+## 📄 Licencia
+
+Este proyecto es de código abierto y está disponible bajo la licencia MIT.
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+1. Fork el proyecto
+2. Crea una rama para tu feature
+3. Commit tus cambios
+4. Push a la rama
+5. Abre un Pull Request
+
+---
+
+**Desarrollado para el Colegio Colombia** 🇨🇴

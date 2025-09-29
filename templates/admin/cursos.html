@@ -291,7 +291,7 @@ endblock %} {% block content %}
             </div>
           </div>
         </div>
-        {% set estudiantes_curso =
+        {% endif %} {% set estudiantes_curso =
         curso.usuarios.filter_by(rol='estudiante').all() %} {% if
         estudiantes_curso %}
         <div class="mb-3">

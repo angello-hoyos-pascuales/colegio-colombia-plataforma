@@ -69,13 +69,6 @@ if __name__ == '__main__':
     app = create_app()
     with app.app_context():
         db.create_all()
-    
-    # Configuración para desarrollo local y Replit
-    import os
-    port = int(os.environ.get('PORT', 5000))
-    host = '0.0.0.0'  # Para Replit y servicios cloud
-    
-    print(f"🌐 Servidor disponible en: http://{host}:{port}")
+    print("🌐 Servidor disponible en: http://127.0.0.1:8000")
     print("🔑 Admin: admin@colegiocolombia.edu.co / admin123")
-    
-    app.run(debug=True, host=host, port=port)
+    app.run(debug=True, host='127.0.0.1', port=8000)
