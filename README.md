@@ -46,7 +46,7 @@ python poblar_colegio.py
 python app.py
 ```
 
-La aplicación estará disponible en: http://127.0.0.1:5000
+La aplicación estará disponible en: http://127.0.0.1:8000
 
 ## 🔑 Credenciales por Defecto
 
@@ -54,13 +54,36 @@ La aplicación estará disponible en: http://127.0.0.1:5000
 - **Email**: admin@colegiocolombia.edu.co
 - **Contraseña**: admin123
 
-### Profesor (ejemplo)
-- **Email**: gonzalo.torres@colegiocolombia.edu.co
-- **Contraseña**: profesor123
+### Profesores (14 disponibles)
+**Formato**: `[nombre].[apellido][número]@colegiocolombia.edu.co` / `profesor123`
 
-### Estudiante (ejemplo)
-- **Email**: jessica.sanchez@estudiante.colegiocolombia.edu.co
-- **Contraseña**: estudiante123
+**Ejemplos de acceso:**
+- **Email**: gonzalo.torres0@colegiocolombia.edu.co - **Contraseña**: profesor123
+- **Email**: ignacio.castro1@colegiocolombia.edu.co - **Contraseña**: profesor123
+- **Email**: lucia.garrido2@colegiocolombia.edu.co - **Contraseña**: profesor123
+- **Email**: pedro.gutierrez3@colegiocolombia.edu.co - **Contraseña**: profesor123
+- **Email**: silvia.alonso4@colegiocolombia.edu.co - **Contraseña**: profesor123
+
+### Estudiantes (48 disponibles)
+**Formato**: `[nombre].[apellido][número]@estudiante.colegiocolombia.edu.co` / `estudiante123`
+
+**Ejemplos de acceso:**
+
+**Ejemplos de estudiantes:**
+- **Email**: jessica.sanchez1@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: fernanda.garrido2@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: alejandro.ramirez3@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: manuel.vazquez4@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: jessica.serrano5@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: daniela.martinez6@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: santiago.jimenez7@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: sara.gutierrez8@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: karen.rubio9@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: valentin.garcia10@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: alejandro.alvarez11@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+- **Email**: teresa.moreno12@estudiante.colegiocolombia.edu.co - **Contraseña**: estudiante123
+
+> **Nota**: Todos los usuarios tienen la misma contraseña según su rol. Para ver la lista completa de usuarios disponibles, accede como administrador y ve a "Gestión de Usuarios".
 
 ## 📊 Datos Incluidos
 
