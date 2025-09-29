@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎓 Plataforma Estudiantil Web - Colegio Colombia
 
 ## ✅ PROYECTO COMPLETADO - 100% FUNCIONAL
@@ -177,3 +178,6 @@ proyecto-platafroma/
 ## Contribución
 
 Este proyecto está diseñado para ser ejecutado localmente en un entorno de desarrollo y pruebas para el Colegio Colombia.
+=======
+# colegio-colombia-plataforma
+>>>>>>> b5f952e8ce73624c63d21a0c3a5aa3835ffcf40f
