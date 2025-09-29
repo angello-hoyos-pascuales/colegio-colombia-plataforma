@@ -1,0 +1,167 @@
+{% extends "base.html" %} {% block title %}Mis Calificaciones - Profesor{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <!-- Encabezado -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2><i class="fas fa-star me-2"></i>Mis Calificaciones</h2>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="{{ url_for('profesor.dashboard') }}">Dashboard</a>
+              </li>
+              <li class="breadcrumb-item active">Calificaciones</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h4 class="mb-0 text-primary">{{ total_calificaciones }}</h4>
+              <small class="text-muted">Total Calificaciones</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h4 class="mb-0 text-info">
+                {% if promedio_general %} {{ "%.1f"|format(promedio_general) }}
+                {% else %} 0.0 {% endif %}
+              </h4>
+              <small class="text-muted">Promedio General</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h4 class="mb-0 text-success">{{ aprobadas }}</h4>
+              <small class="text-muted">Aprobadas (≥3.0)</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h4 class="mb-0 text-danger">{{ reprobadas }}</h4>
+              <small class="text-muted">Reprobadas (<3.0)</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Calificaciones -->
+      {% if calificaciones %}
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Historial de Calificaciones
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Estudiante</th>
+                  <th>Asignatura</th>
+                  <th>Tarea</th>
+                  <th>Nota</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for calificacion in calificaciones %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar me-2">
+                        <span class="badge bg-secondary rounded-pill">
+                          {{ calificacion.estudiante.nombres[0] }}{{
+                          calificacion.estudiante.apellidos[0] }}
+                        </span>
+                      </div>
+                      <div>
+                        <strong
+                          >{{ calificacion.estudiante.nombres }} {{
+                          calificacion.estudiante.apellidos }}</strong
+                        >
+                        <br />
+                        <small class="text-muted"
+                          >{{ calificacion.estudiante.email }}</small
+                        >
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary">
+                      {{ calificacion.tarea.asignatura.nombre }}
+                    </span>
+                  </td>
+                  <td>
+                    <strong>{{ calificacion.tarea.titulo }}</strong>
+                    <br />
+                    <small class="text-muted">
+                      Vence: {{
+                      calificacion.tarea.fecha_entrega.strftime('%d/%m/%Y') }}
+                    </small>
+                  </td>
+                  <td>
+                    <span
+                      class="badge fs-6 {% if calificacion.nota >= 4.5 %}bg-success {% elif calificacion.nota >= 3.5 %}bg-info {% elif calificacion.nota >= 3.0 %}bg-warning text-dark {% else %}bg-danger {% endif %}"
+                    >
+                      {{ calificacion.nota }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if calificacion.nota >= 3.0 %}
+                    <span class="badge bg-success">Aprobada</span>
+                    {% else %}
+                    <span class="badge bg-danger">Reprobada</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {{ calificacion.fecha_calificacion.strftime('%d/%m/%Y
+                    %H:%M') }}
+                  </td>
+                  <td>
+                    <a
+                      href="{{ url_for('profesor.calificacion_individual', tarea_id=calificacion.tarea_id, estudiante_id=calificacion.estudiante_id) }}"
+                      class="btn btn-sm btn-outline-primary"
+                    >
+                      <i class="fas fa-edit me-1"></i>Editar
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <!-- Sin calificaciones -->
+      <div class="text-center py-5">
+        <i class="fas fa-star fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No hay calificaciones registradas</h4>
+        <p class="text-muted">
+          Cuando califiques tareas de tus estudiantes, aparecerán aquí.
+        </p>
+        <a href="{{ url_for('profesor.tareas') }}" class="btn btn-primary">
+          <i class="fas fa-tasks me-2"></i>Ver Mis Tareas
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

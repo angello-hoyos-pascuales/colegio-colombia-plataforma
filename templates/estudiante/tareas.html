@@ -160,8 +160,8 @@
   <!-- Lista de tareas -->
   <div class="row">
     {% for tarea in tareas.items %} {% set dias_restantes =
-    (tarea.fecha_vencimiento.date() - moment().date()).days if
-    tarea.fecha_vencimiento else None %}
+    (tarea.fecha_entrega.date() - moment().date()).days if tarea.fecha_entrega
+    else None %}
     <div class="col-md-6 col-lg-4 mb-4">
       <div
         class="card tarea-card h-100 {% if dias_restantes and dias_restantes <= 1 %}urgente{% endif %}"
@@ -169,13 +169,12 @@
         <div
           class="card-header d-flex justify-content-between align-items-center"
         >
-          <h6 class="mb-0">{{ tarea.nombre }}</h6>
+          <h6 class="mb-0">{{ tarea.titulo }}</h6>
           {% if tarea.entregada %}
           <span class="estado-badge text-white entregada">
             <i class="fas fa-check me-1"></i>Entregada
           </span>
-          {% elif tarea.fecha_vencimiento and tarea.fecha_vencimiento < moment()
-          %}
+          {% elif tarea.esta_vencida %}
           <span class="estado-badge text-white vencida">
             <i class="fas fa-times me-1"></i>Vencida
           </span>
@@ -202,13 +201,13 @@
               %}...{% endif %}
             </p>
           </div>
-          {% endif %} {% if tarea.fecha_vencimiento %}
+          {% endif %} {% if tarea.fecha_entrega %}
           <div class="mb-2">
             <small class="text-muted">Fecha límite:</small>
             <p
               class="mb-1 {% if dias_restantes and dias_restantes <= 1 %}text-danger fw-bold{% endif %}"
             >
-              {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }} {% if
+              {{ tarea.fecha_entrega.strftime('%d/%m/%Y %H:%M') }} {% if
               dias_restantes is not none %} {% if dias_restantes > 0 %}
               <small class="text-muted"
                 >({{ dias_restantes }} días restantes)</small
@@ -232,8 +231,7 @@
             >
               <i class="fas fa-eye me-1"></i>Ver Detalle
             </a>
-            {% if not tarea.entregada and (not tarea.fecha_vencimiento or
-            tarea.fecha_vencimiento > moment()) %}
+            {% if not tarea.entregada and not tarea.esta_vencida %}
             <a
               href="{{ url_for('estudiante.entregar_tarea', id=tarea.id) }}"
               class="btn btn-primary btn-sm"

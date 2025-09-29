@@ -1,0 +1,219 @@
+{% extends "base.html" %} {% block title %}Mi Horario - Profesor{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <!-- Encabezado -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2><i class="fas fa-calendar-alt me-2"></i>Mi Horario</h2>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="{{ url_for('profesor.dashboard') }}">Dashboard</a>
+              </li>
+              <li class="breadcrumb-item active">Mi Horario</li>
+            </ol>
+          </nav>
+        </div>
+        <div>
+          <span class="badge bg-info">
+            <i class="fas fa-clock me-1"></i>
+            Semana actual
+          </span>
+        </div>
+      </div>
+
+      <!-- Horario Semanal -->
+      {% if horario_semanal %}
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-calendar-week me-2"></i>Horario Semanal
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th width="15%">Hora</th>
+                  {% for dia in dias_semana %}
+                  <th class="text-center">{{ dia }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Generar filas de horario de 7:00 AM a 6:00 PM -->
+                {% for hora in range(7, 19) %}
+                <tr>
+                  <td class="fw-bold text-center align-middle">
+                    {{ "%02d:00"|format(hora) }} - {{ "%02d:00"|format(hora + 1)
+                    }}
+                  </td>
+                  {% for dia in dias_semana %}
+                  <td
+                    class="text-center position-relative"
+                    style="height: 80px"
+                  >
+                    {% set clases_hora = [] %} {% for horario in
+                    horario_semanal[dia] %} {% if horario.hora_inicio.hour <=
+                    hora < horario.hora_fin.hour %} {% set _ =
+                    clases_hora.append(horario) %} {% endif %} {% endfor %} {%
+                    for clase in clases_hora %}
+                    <div
+                      class="clase-card bg-primary text-white rounded p-2 mb-1 small"
+                    >
+                      <div class="fw-bold">{{ clase.asignatura.nombre }}</div>
+                      <div class="opacity-75">
+                        {{ clase.asignatura.curso.nombre }}
+                      </div>
+                      <div class="opacity-75">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ clase.hora_inicio.strftime('%H:%M') }} - {{
+                        clase.hora_fin.strftime('%H:%M') }}
+                      </div>
+                      {% if clase.aula %}
+                      <div class="opacity-75">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ clase.aula
+                        }}
+                      </div>
+                      {% endif %}
+                    </div>
+                    {% endfor %}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen del día de hoy -->
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-calendar-day me-2"></i>Clases de Hoy
+              </h5>
+            </div>
+            <div class="card-body">
+              {% if horario_semanal[dia_actual] %} {% for clase in
+              horario_semanal[dia_actual] %}
+              <div class="d-flex align-items-center mb-3 p-3 border rounded">
+                <div class="bg-primary rounded p-2 me-3">
+                  <i class="fas fa-book text-white"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-1">{{ clase.asignatura.nombre }}</h6>
+                  <div class="text-muted small">
+                    <i class="fas fa-users me-1"></i>{{
+                    clase.asignatura.curso.nombre }}
+                    <br />
+                    <i class="fas fa-clock me-1"></i>
+                    {{ clase.hora_inicio.strftime('%H:%M') }} - {{
+                    clase.hora_fin.strftime('%H:%M') }} {% if clase.aula %}
+                    <br />
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ clase.aula }}
+                    {% endif %}
+                  </div>
+                </div>
+                <div>
+                  <span class="badge bg-info">
+                    {% set ahora = moment() %} {% if ahora.time() <
+                    clase.hora_inicio.time() %} Próxima {% elif ahora.time() >=
+                    clase.hora_inicio.time() and ahora.time() <=
+                    clase.hora_fin.time() %} En curso {% else %} Finalizada {%
+                    endif %}
+                  </span>
+                </div>
+              </div>
+              {% endfor %} {% else %}
+              <div class="text-center py-3">
+                <i class="fas fa-calendar-check fa-2x text-muted mb-2"></i>
+                <p class="text-muted">No tienes clases programadas para hoy</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-chart-pie me-2"></i>Estadísticas Semanales
+              </h5>
+            </div>
+            <div class="card-body">
+              {% set total_clases = horario_semanal.values()|map('length')|sum
+              %} {% set dias_con_clases_count =
+              horario_semanal.values()|reject('equalto', [])|list|length %}
+
+              <div class="row text-center">
+                <div class="col-6 mb-3">
+                  <h4 class="mb-0 text-primary">{{ total_clases }}</h4>
+                  <small class="text-muted">Total Clases</small>
+                </div>
+                <div class="col-6 mb-3">
+                  <h4 class="mb-0 text-info">{{ dias_con_clases_count }}</h4>
+                  <small class="text-muted">Días con Clases</small>
+                </div>
+              </div>
+
+              <!-- Distribución por día -->
+              {% for dia in dias_semana %} {% set clases_dia =
+              horario_semanal[dia]|length %} {% if clases_dia > 0 %}
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <span class="fw-bold">{{ dia }}</span>
+                <div class="d-flex align-items-center">
+                  <span class="badge bg-secondary me-2">{{ clases_dia }}</span>
+                  <div class="progress" style="width: 100px; height: 8px">
+                    <div
+                      class="progress-bar"
+                      style="width: {{ (clases_dia / total_clases * 100)|round }}%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              {% endif %} {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <!-- Sin horario -->
+      <div class="text-center py-5">
+        <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No tienes horario configurado</h4>
+        <p class="text-muted">
+          Contacta al administrador para configurar tu horario de clases.
+        </p>
+        <a href="{{ url_for('profesor.dashboard') }}" class="btn btn-primary">
+          <i class="fas fa-home me-2"></i>Volver al Dashboard
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .clase-card {
+    transition: transform 0.2s;
+  }
+
+  .clase-card:hover {
+    transform: scale(1.05);
+  }
+
+  .table td {
+    vertical-align: top;
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,309 @@
+{% extends "base.html" %} {% block title %}Configuración del Sistema -
+Administrador{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="fas fa-cog text-primary me-2"></i>
+      Configuración del Sistema
+    </h1>
+    <div>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Volver
+      </a>
+    </div>
+  </div>
+
+  <!-- Información del Sistema -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-info-circle text-primary me-2"></i>Información del
+        Sistema
+      </h4>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-server me-2"></i>Detalles de la Aplicación
+          </h5>
+        </div>
+        <div class="card-body">
+          <table class="table table-borderless">
+            <tr>
+              <td><strong>Versión:</strong></td>
+              <td>{{ app_info.version }}</td>
+            </tr>
+            <tr>
+              <td><strong>Sistema:</strong></td>
+              <td>Flask 3.0 + SQLite</td>
+            </tr>
+            <tr>
+              <td><strong>Última Actividad:</strong></td>
+              <td>{{ app_info.uptime.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+            </tr>
+            <tr>
+              <td><strong>Tamaño BD:</strong></td>
+              <td>{{ app_info.bd_tamaño }} MB</td>
+            </tr>
+            <tr>
+              <td><strong>Estado:</strong></td>
+              <td><span class="badge bg-success">Operativo</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-pie me-2"></i>Estadísticas Rápidas
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-primary mb-1">63</h4>
+                <small class="text-muted">Usuarios Activos</small>
+              </div>
+            </div>
+            <div class="col-6 mb-3">
+              <div class="border rounded p-3">
+                <h4 class="text-success mb-1">1,344</h4>
+                <small class="text-muted">Calificaciones</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="border rounded p-3">
+                <h4 class="text-warning mb-1">12</h4>
+                <small class="text-muted">Cursos</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="border rounded p-3">
+                <h4 class="text-info mb-1">112</h4>
+                <small class="text-muted">Asignaturas</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Herramientas de Administración -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-tools text-primary me-2"></i>Herramientas de
+        Administración
+      </h4>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-database me-2"></i>Base de Datos
+          </h6>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            Crear backup de la base de datos para respaldar toda la información
+            del sistema.
+          </p>
+          <a href="{{ url_for('admin.crear_backup') }}" class="btn btn-primary">
+            <i class="fas fa-download me-1"></i>Crear Backup
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-success">
+        <div class="card-header bg-success text-white">
+          <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Reportes</h6>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            Generar y descargar reportes detallados del rendimiento académico.
+          </p>
+          <a href="{{ url_for('admin.reportes') }}" class="btn btn-success">
+            <i class="fas fa-chart-line me-1"></i>Ver Reportes
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-warning">
+        <div class="card-header bg-warning text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-users me-2"></i>Gestión de Usuarios
+          </h6>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            Administrar usuarios del sistema: estudiantes, profesores y
+            administradores.
+          </p>
+          <a href="{{ url_for('admin.usuarios') }}" class="btn btn-warning">
+            <i class="fas fa-user-cog me-1"></i>Gestionar
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuraciones del Sistema -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-cogs text-primary me-2"></i>Configuraciones del Sistema
+      </h4>
+    </div>
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="mb-3">Configuraciones Académicas</h6>
+              <div class="list-group list-group-flush">
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Períodos Académicos
+                  <span class="badge bg-primary rounded-pill">3</span>
+                </div>
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Grados Disponibles
+                  <span class="badge bg-success rounded-pill">6º - 11º</span>
+                </div>
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Secciones por Grado
+                  <span class="badge bg-info rounded-pill">A, B</span>
+                </div>
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Escala de Calificación
+                  <span class="badge bg-warning rounded-pill">1.0 - 5.0</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="mb-3">Configuraciones del Sistema</h6>
+              <div class="list-group list-group-flush">
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Modo Debug
+                  <span class="badge bg-success rounded-pill">Activado</span>
+                </div>
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Puerto del Servidor
+                  <span class="badge bg-primary rounded-pill">8000</span>
+                </div>
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Autenticación
+                  <span class="badge bg-success rounded-pill">Flask-Login</span>
+                </div>
+                <div
+                  class="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  Seguridad CSRF
+                  <span class="badge bg-success rounded-pill">Habilitada</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mantenimiento -->
+  <div class="row">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-wrench text-primary me-2"></i>Mantenimiento
+      </h4>
+    </div>
+    <div class="col-12">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>Zona de
+            Mantenimiento
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-warning" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Importante:</strong> Las siguientes acciones son
+            irreversibles y pueden afectar el funcionamiento del sistema.
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <button
+                class="btn btn-outline-danger w-100"
+                onclick="confirmarAccion('limpiar_logs')"
+              >
+                <i class="fas fa-broom me-1"></i>Limpiar Logs
+              </button>
+            </div>
+            <div class="col-md-4 mb-3">
+              <button
+                class="btn btn-outline-warning w-100"
+                onclick="confirmarAccion('optimizar_bd')"
+              >
+                <i class="fas fa-database me-1"></i>Optimizar BD
+              </button>
+            </div>
+            <div class="col-md-4 mb-3">
+              <button
+                class="btn btn-outline-info w-100"
+                onclick="window.location.reload()"
+              >
+                <i class="fas fa-sync me-1"></i>Refrescar Sistema
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmarAccion(accion) {
+    let mensaje = "";
+    switch (accion) {
+      case "limpiar_logs":
+        mensaje =
+          "¿Estás seguro de que quieres limpiar todos los logs del sistema?";
+        break;
+      case "optimizar_bd":
+        mensaje =
+          "¿Deseas optimizar la base de datos? Esto puede tomar algunos minutos.";
+        break;
+      default:
+        mensaje = "¿Estás seguro de realizar esta acción?";
+    }
+
+    if (confirm(mensaje)) {
+      alert(
+        "Funcionalidad en desarrollo. Se implementará en versiones futuras."
+      );
+    }
+  }
+</script>
+{% endblock %}

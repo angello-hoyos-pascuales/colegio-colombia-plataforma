@@ -151,7 +151,7 @@
                             </td>
                             <td>
                                 <div>
-                                    <strong>{{ usuario.nombre }} {{ usuario.apellido }}</strong>
+                                    <strong>{{ usuario.nombres }} {{ usuario.apellidos }}</strong>
                                     {% if usuario.role == 'estudiante' and usuario.curso %}
                                         <br><small class="text-muted">{{ usuario.curso.nombre }}</small>
                                     {% endif %}
@@ -224,7 +224,7 @@
                                     </a>
                                     {% if current_user.id != usuario.id %}
                                     <button class="btn btn-outline-danger" 
-                                            onclick="confirmarEliminacion({{ usuario.id }}, '{{ usuario.nombre }} {{ usuario.apellido }}')"
+                                            onclick="confirmarEliminacion({{ usuario.id }}, '{{ usuario.nombres }} {{ usuario.apellidos }}')"
                                             title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -318,7 +318,7 @@
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-user me-2"></i>
-                    {{ usuario.nombre }} {{ usuario.apellido }}
+                    {{ usuario.nombres }} {{ usuario.apellidos }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>

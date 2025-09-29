@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort, send_file, Response, current_app
 from flask_login import login_required, current_user
 from functools import wraps
-from models import Usuario, Curso, Asignatura, Tarea, Calificacion, Horario, NotificacionReemplazo
+from models import Usuario, Curso, Asignatura, Tarea, Calificacion, Horario, NotificacionReemplazo, usuario_curso
 from forms import RegistroUsuarioForm, CursoForm, AsignaturaForm, HorarioForm, AusenciaProfesorForm, FiltroProfesorForm
 from extensions import db
 from datetime import datetime, date
@@ -126,7 +126,9 @@ def nuevo_usuario():
         
         # Asignar curso si es estudiante
         if form.role.data == 'estudiante' and form.curso_id.data and form.curso_id.data != 0:
-            usuario.curso_id = form.curso_id.data
+            curso = Curso.query.get(form.curso_id.data)
+            if curso:
+                usuario.cursos.append(curso)
         
         # Asignar materia de especialidad si es profesor
         if form.role.data == 'profesor' and form.materia_especialidad.data:
@@ -174,8 +176,8 @@ def editar_usuario(id):
     form.curso_id.choices = [(0, 'Seleccionar curso...')] + [(c.id, f"{c.grado}{c.seccion}") for c in cursos]
     
     # Establecer valores actuales
-    if usuario.curso_id:
-        form.curso_id.data = usuario.curso_id
+    if usuario.es_estudiante and usuario.cursos:
+        form.curso_id.data = usuario.cursos[0].id
     if usuario.materia_especialidad:
         form.materia_especialidad.data = usuario.materia_especialidad
     
@@ -202,9 +204,14 @@ def editar_usuario(id):
         
         # Actualizar curso si es estudiante
         if form.role.data == 'estudiante' and form.curso_id.data and form.curso_id.data != 0:
-            usuario.curso_id = form.curso_id.data
+            # Limpiar cursos existentes
+            usuario.cursos.clear()
+            curso = Curso.query.get(form.curso_id.data)
+            if curso:
+                usuario.cursos.append(curso)
         else:
-            usuario.curso_id = None
+            # Limpiar cursos si no es estudiante
+            usuario.cursos.clear()
         
         # Actualizar materia de especialidad si es profesor
         if form.role.data == 'profesor' and form.materia_especialidad.data:
@@ -643,3 +650,306 @@ def rechazar_reemplazo(id):
         'message': 'Reemplazo actualizado',
         'nuevo_reemplazo': nuevo_reemplazo.nombres + ' ' + nuevo_reemplazo.apellidos if nuevo_reemplazo else None
     })
+
+
+@admin_bp.route('/reportes')
+@login_required
+@admin_required
+def reportes():
+    """Panel de reportes y estadísticas"""
+    from sqlalchemy import func
+    
+    # Estadísticas generales
+    total_usuarios = Usuario.query.filter_by(activo=True).count()
+    total_estudiantes = Usuario.query.filter_by(role='estudiante', activo=True).count()
+    total_profesores = Usuario.query.filter_by(role='profesor', activo=True).count()
+    total_cursos = Curso.query.filter_by(activo=True).count()
+    total_asignaturas = Asignatura.query.filter_by(activa=True).count()
+    total_calificaciones = Calificacion.query.count()
+    
+    # Estadísticas por curso usando la relación many-to-many
+    estadisticas_cursos = []
+    for curso in Curso.query.filter_by(activo=True).all():
+        estudiantes_curso = Usuario.query.filter_by(role='estudiante', activo=True).filter(
+            Usuario.cursos.contains(curso)
+        ).all()
+        
+        # Calcular promedio de calificaciones para este curso
+        calificaciones_curso = db.session.query(func.avg(Calificacion.nota)).join(
+            Usuario, Calificacion.estudiante_id == Usuario.id
+        ).filter(
+            Usuario.cursos.contains(curso)
+        ).scalar()
+        
+        estadisticas_cursos.append({
+            'grado': curso.grado,
+            'seccion': curso.seccion,
+            'total_estudiantes': len(estudiantes_curso),
+            'promedio_general': round(calificaciones_curso or 0, 2)
+        })
+    
+    # Rendimiento por asignatura
+    rendimiento_asignaturas = db.session.query(
+        Asignatura.nombre,
+        func.count(Calificacion.id).label('total_calificaciones'),
+        func.avg(Calificacion.nota).label('promedio'),
+        func.min(Calificacion.nota).label('nota_minima'),
+        func.max(Calificacion.nota).label('nota_maxima')
+    ).join(Tarea, Tarea.asignatura_id == Asignatura.id).join(
+        Calificacion, Calificacion.tarea_id == Tarea.id
+    ).filter(
+        Asignatura.activa == True
+    ).group_by(Asignatura.id, Asignatura.nombre).all()
+    
+    # Actividad reciente (últimas 10 calificaciones)
+    actividad_reciente = db.session.query(Calificacion, Usuario, Tarea, Asignatura).join(
+        Usuario, Calificacion.estudiante_id == Usuario.id
+    ).join(
+        Tarea, Calificacion.tarea_id == Tarea.id
+    ).join(
+        Asignatura, Tarea.asignatura_id == Asignatura.id
+    ).order_by(Calificacion.fecha_calificacion.desc()).limit(10).all()
+    
+    return render_template('admin/reportes.html',
+                         total_usuarios=total_usuarios,
+                         total_estudiantes=total_estudiantes,
+                         total_profesores=total_profesores,
+                         total_cursos=total_cursos,
+                         total_asignaturas=total_asignaturas,
+                         total_calificaciones=total_calificaciones,
+                         estadisticas_cursos=estadisticas_cursos,
+                         rendimiento_asignaturas=rendimiento_asignaturas,
+                         actividad_reciente=actividad_reciente)
+
+
+@admin_bp.route('/configuracion')
+@login_required
+@admin_required
+def configuracion():
+    """Panel de configuración del sistema"""
+    import os
+    from datetime import datetime
+    
+    # Información del sistema
+    db_path = os.path.join(current_app.instance_path, 'database.db')
+    db_size = os.path.getsize(db_path) if os.path.exists(db_path) else 0
+    db_size_mb = round(db_size / (1024 * 1024), 2)
+    
+    # Información de la aplicación
+    app_info = {
+        'version': '1.0.0',
+        'ultimo_backup': None,  # Se puede implementar
+        'uptime': datetime.now(),
+        'bd_tamaño': db_size_mb
+    }
+    
+    return render_template('admin/configuracion.html', app_info=app_info)
+
+
+@admin_bp.route('/configuracion/backup')
+@login_required
+@admin_required
+def crear_backup():
+    """Crear backup de la base de datos"""
+    import shutil
+    from datetime import datetime
+    
+    try:
+        # Crear nombre del backup con timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_filename = f'backup_colegio_{timestamp}.db'
+        
+        # Rutas
+        db_path = os.path.join(current_app.instance_path, 'database.db')
+        backup_path = os.path.join(current_app.instance_path, backup_filename)
+        
+        # Copiar base de datos
+        shutil.copy2(db_path, backup_path)
+        
+        flash(f'Backup creado exitosamente: {backup_filename}', 'success')
+        return send_file(backup_path, as_attachment=True, download_name=backup_filename)
+        
+    except Exception as e:
+        flash(f'Error al crear backup: {str(e)}', 'error')
+        return redirect(url_for('admin.configuracion'))
+
+
+@admin_bp.route('/reportes/exportar')
+@login_required
+@admin_required
+def exportar_reportes():
+    """Exportar reportes en formato CSV"""
+    import csv
+    from io import StringIO
+    
+    # Crear CSV en memoria
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Headers
+    writer.writerow(['Tipo', 'Descripción', 'Valor', 'Fecha'])
+    
+    # Datos básicos
+    total_usuarios = Usuario.query.filter_by(activo=True).count()
+    total_estudiantes = Usuario.query.filter_by(role='estudiante', activo=True).count()
+    total_profesores = Usuario.query.filter_by(role='profesor', activo=True).count()
+    
+    writer.writerow(['Estadística', 'Total Usuarios', total_usuarios, datetime.now().strftime('%Y-%m-%d')])
+    writer.writerow(['Estadística', 'Total Estudiantes', total_estudiantes, datetime.now().strftime('%Y-%m-%d')])
+    writer.writerow(['Estadística', 'Total Profesores', total_profesores, datetime.now().strftime('%Y-%m-%d')])
+    
+    # Preparar respuesta
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=reporte_colegio_{datetime.now().strftime("%Y%m%d")}.csv'}
+    )
+
+
+@admin_bp.route('/estudiantes/buscar')
+@login_required
+@admin_required
+def buscar_estudiantes():
+    """Página para buscar y listar estudiantes"""
+    from sqlalchemy import func
+    
+    # Obtener parámetros de búsqueda
+    busqueda = request.args.get('busqueda', '').strip()
+    curso_id = request.args.get('curso_id', type=int)
+    
+    # Consulta base de estudiantes
+    query = Usuario.query.filter_by(role='estudiante', activo=True)
+    
+    # Aplicar filtros de búsqueda
+    if busqueda:
+        query = query.filter(
+            db.or_(
+                Usuario.nombres.ilike(f'%{busqueda}%'),
+                Usuario.apellidos.ilike(f'%{busqueda}%'),
+                Usuario.numero_documento.ilike(f'%{busqueda}%'),
+                Usuario.email.ilike(f'%{busqueda}%')
+            )
+        )
+    
+    if curso_id:
+        curso = Curso.query.get(curso_id)
+        if curso:
+            query = query.filter(Usuario.cursos.contains(curso))
+    
+    # Obtener estudiantes con estadísticas
+    estudiantes = query.all()
+    
+    # Calcular estadísticas básicas para cada estudiante
+    estudiantes_stats = []
+    for estudiante in estudiantes:
+        # Promedio general del estudiante
+        promedio = db.session.query(func.avg(Calificacion.nota)).filter_by(
+            estudiante_id=estudiante.id
+        ).scalar() or 0
+        
+        # Total de calificaciones
+        total_calificaciones = Calificacion.query.filter_by(estudiante_id=estudiante.id).count()
+        
+        # Cursos del estudiante
+        cursos_estudiante = [f"{curso.grado}{curso.seccion}" for curso in estudiante.cursos]
+        
+        estudiantes_stats.append({
+            'estudiante': estudiante,
+            'promedio': round(promedio, 2),
+            'total_calificaciones': total_calificaciones,
+            'cursos': ', '.join(cursos_estudiante) if cursos_estudiante else 'Sin curso asignado'
+        })
+    
+    # Obtener todos los cursos para el filtro
+    cursos = Curso.query.filter_by(activo=True).order_by(Curso.grado, Curso.seccion).all()
+    
+    return render_template('admin/buscar_estudiantes.html',
+                         estudiantes_stats=estudiantes_stats,
+                         cursos=cursos,
+                         busqueda=busqueda,
+                         curso_id=curso_id)
+
+
+@admin_bp.route('/estudiantes/<int:estudiante_id>/perfil')
+@login_required
+@admin_required
+def perfil_estudiante(estudiante_id):
+    """Perfil académico completo del estudiante"""
+    from sqlalchemy import func
+    
+    # Obtener el estudiante
+    estudiante = Usuario.query.filter_by(id=estudiante_id, role='estudiante').first()
+    if not estudiante:
+        flash('Estudiante no encontrado.', 'error')
+        return redirect(url_for('admin.buscar_estudiantes'))
+    
+    # Información básica del estudiante
+    cursos_estudiante = estudiante.cursos
+    
+    # Estadísticas generales
+    total_calificaciones = Calificacion.query.filter_by(estudiante_id=estudiante.id).count()
+    promedio_general = db.session.query(func.avg(Calificacion.nota)).filter_by(
+        estudiante_id=estudiante.id
+    ).scalar() or 0
+    
+    # Calificaciones por asignatura
+    calificaciones_asignatura = db.session.query(
+        Asignatura.nombre,
+        func.count(Calificacion.id).label('total_notas'),
+        func.avg(Calificacion.nota).label('promedio'),
+        func.min(Calificacion.nota).label('nota_minima'),
+        func.max(Calificacion.nota).label('nota_maxima')
+    ).join(Tarea, Tarea.asignatura_id == Asignatura.id).join(
+        Calificacion, Calificacion.tarea_id == Tarea.id
+    ).filter(
+        Calificacion.estudiante_id == estudiante.id
+    ).group_by(Asignatura.id, Asignatura.nombre).all()
+    
+    # Últimas 10 calificaciones
+    ultimas_calificaciones = db.session.query(Calificacion, Tarea, Asignatura).join(
+        Tarea, Calificacion.tarea_id == Tarea.id
+    ).join(
+        Asignatura, Tarea.asignatura_id == Asignatura.id
+    ).filter(
+        Calificacion.estudiante_id == estudiante.id
+    ).order_by(Calificacion.fecha_calificacion.desc()).limit(10).all()
+    
+    # Tareas pendientes/sin calificar
+    from datetime import date, timedelta
+    hoy = datetime.now()
+    
+    tareas_estudiante = db.session.query(Tarea, Asignatura).join(
+        Asignatura, Tarea.asignatura_id == Asignatura.id
+    ).filter(
+        Tarea.fecha_entrega >= hoy,  # Solo tareas vigentes
+        ~Tarea.id.in_(
+            db.session.query(Calificacion.tarea_id).filter_by(estudiante_id=estudiante.id)
+        )
+    ).all()
+    
+    # Progreso académico por mes (últimos 6 meses)
+    try:
+        hace_seis_meses = hoy.replace(month=hoy.month-6) if hoy.month > 6 else hoy.replace(year=hoy.year-1, month=hoy.month+6)
+    except ValueError:
+        # Manejar el caso de fechas inválidas (como 31 de enero -> 31 de julio que no existe)
+        hace_seis_meses = hoy - timedelta(days=180)
+    
+    progreso_mensual = db.session.query(
+        func.strftime('%Y-%m', Calificacion.fecha_calificacion).label('mes'),
+        func.avg(Calificacion.nota).label('promedio_mes'),
+        func.count(Calificacion.id).label('total_calificaciones')
+    ).filter(
+        Calificacion.estudiante_id == estudiante.id,
+        Calificacion.fecha_calificacion >= hace_seis_meses
+    ).group_by(func.strftime('%Y-%m', Calificacion.fecha_calificacion)).order_by('mes').all()
+    
+    return render_template('admin/perfil_estudiante.html',
+                         estudiante=estudiante,
+                         cursos_estudiante=cursos_estudiante,
+                         total_calificaciones=total_calificaciones,
+                         promedio_general=round(promedio_general, 2),
+                         calificaciones_asignatura=calificaciones_asignatura,
+                         ultimas_calificaciones=ultimas_calificaciones,
+                         tareas_pendientes=tareas_estudiante,
+                         progreso_mensual=progreso_mensual)

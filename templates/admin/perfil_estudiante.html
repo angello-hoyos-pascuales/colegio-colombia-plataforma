@@ -1,0 +1,362 @@
+{% extends "base.html" %} {% block title %}Perfil de {{ estudiante.nombres }} {{
+estudiante.apellidos }} - Administrador{% endblock %} {% block content %}
+<div class="container-fluid">
+  <!-- Header del Perfil -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">
+        <i class="fas fa-user-graduate text-primary me-2"></i>
+        {{ estudiante.nombres }} {{ estudiante.apellidos }}
+      </h1>
+      <p class="text-muted mb-0">Perfil Académico Completo</p>
+    </div>
+    <div>
+      <a
+        href="{{ url_for('admin.buscar_estudiantes') }}"
+        class="btn btn-secondary"
+      >
+        <i class="fas fa-arrow-left me-1"></i>Volver a Búsqueda
+      </a>
+    </div>
+  </div>
+
+  <!-- Información Personal y Resumen Académico -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-id-card me-2"></i>Información Personal
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-3">
+            <div class="student-avatar">
+              <i class="fas fa-user-graduate fa-3x"></i>
+            </div>
+            <h5 class="mt-2">
+              {{ estudiante.nombres }} {{ estudiante.apellidos }}
+            </h5>
+          </div>
+
+          <table class="table table-borderless">
+            <tr>
+              <td><strong>Documento:</strong></td>
+              <td>
+                {{ estudiante.tipo_documento }} {{ estudiante.numero_documento
+                }}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Email:</strong></td>
+              <td>{{ estudiante.email }}</td>
+            </tr>
+            <tr>
+              <td><strong>Teléfono:</strong></td>
+              <td>{{ estudiante.telefono or 'No registrado' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Fecha Nacimiento:</strong></td>
+              <td>
+                {{ estudiante.fecha_nacimiento.strftime('%d/%m/%Y') if
+                estudiante.fecha_nacimiento else 'No registrada' }}
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Dirección:</strong></td>
+              <td>{{ estudiante.direccion or 'No registrada' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Estado:</strong></td>
+              <td>
+                {% if estudiante.activo %}
+                <span class="badge bg-success">Activo</span>
+                {% else %}
+                <span class="badge bg-danger">Inactivo</span>
+                {% endif %}
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <!-- Resumen Académico -->
+      <div class="card mb-3">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-line me-2"></i>Resumen Académico
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3">
+              <div class="stat-card">
+                <h3 class="text-primary">{{ promedio_general }}</h3>
+                <p class="text-muted mb-0">Promedio General</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="stat-card">
+                <h3 class="text-success">{{ total_calificaciones }}</h3>
+                <p class="text-muted mb-0">Total Calificaciones</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="stat-card">
+                <h3 class="text-warning">
+                  {{ calificaciones_asignatura|length }}
+                </h3>
+                <p class="text-muted mb-0">Asignaturas</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="stat-card">
+                <h3 class="text-info">{{ tareas_pendientes|length }}</h3>
+                <p class="text-muted mb-0">Tareas Pendientes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cursos Asignados -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-school me-2"></i>Cursos Asignados
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if cursos_estudiante %}
+          <div class="row">
+            {% for curso in cursos_estudiante %}
+            <div class="col-md-6 mb-2">
+              <div class="alert alert-info mb-2">
+                <strong>{{ curso.grado }}{{ curso.seccion }}</strong> - {{
+                curso.año_academico }}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted">No tiene cursos asignados.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rendimiento por Asignatura -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="fas fa-book me-2"></i>Rendimiento por Asignatura
+      </h5>
+    </div>
+    <div class="card-body">
+      {% if calificaciones_asignatura %}
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Asignatura</th>
+              <th class="text-center">Total Notas</th>
+              <th class="text-center">Promedio</th>
+              <th class="text-center">Nota Mínima</th>
+              <th class="text-center">Nota Máxima</th>
+              <th class="text-center">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for asignatura in calificaciones_asignatura %}
+            <tr>
+              <td><strong>{{ asignatura.nombre }}</strong></td>
+              <td class="text-center">{{ asignatura.total_notas }}</td>
+              <td class="text-center">
+                {% set promedio = asignatura.promedio|round(2) %} {% if promedio
+                >= 4.0 %}
+                <span class="badge bg-success fs-6">{{ promedio }}</span>
+                {% elif promedio >= 3.0 %}
+                <span class="badge bg-warning fs-6">{{ promedio }}</span>
+                {% else %}
+                <span class="badge bg-danger fs-6">{{ promedio }}</span>
+                {% endif %}
+              </td>
+              <td class="text-center">{{ asignatura.nota_minima|round(1) }}</td>
+              <td class="text-center">{{ asignatura.nota_maxima|round(1) }}</td>
+              <td class="text-center">
+                {% if asignatura.promedio >= 3.0 %}
+                <span class="badge bg-success">Aprobado</span>
+                {% else %}
+                <span class="badge bg-danger">En Riesgo</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-4">
+        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">Sin calificaciones por asignatura</h5>
+        <p class="text-muted">
+          El estudiante aún no tiene calificaciones registradas.
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Últimas Calificaciones y Tareas Pendientes -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-history me-2"></i>Últimas Calificaciones
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if ultimas_calificaciones %}
+          <div class="timeline">
+            {% for calificacion, tarea, asignatura in ultimas_calificaciones %}
+            <div class="timeline-item">
+              <div class="timeline-marker bg-primary"></div>
+              <div class="timeline-content">
+                <h6 class="mb-1">{{ tarea.titulo }}</h6>
+                <p class="text-muted mb-1">{{ asignatura.nombre }}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span
+                    class="badge bg-{{ 'success' if calificacion.nota >= 4.0 else 'warning' if calificacion.nota >= 3.0 else 'danger' }}"
+                  >
+                    {{ calificacion.nota }}
+                  </span>
+                  <small class="text-muted"
+                    >{{ calificacion.fecha_calificacion.strftime('%d/%m/%Y')
+                    }}</small
+                  >
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center">
+            No hay calificaciones registradas.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-tasks me-2"></i>Tareas Pendientes
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if tareas_pendientes %} {% for tarea, asignatura in
+          tareas_pendientes %}
+          <div
+            class="alert alert-warning d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <strong>{{ tarea.titulo }}</strong><br />
+              <small class="text-muted">{{ asignatura.nombre }}</small>
+            </div>
+            <div class="text-end">
+              <small class="text-muted d-block">Vence:</small>
+              <strong>{{ tarea.fecha_entrega.strftime('%d/%m/%Y') }}</strong>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="text-center py-3">
+            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+            <p class="text-muted mb-0">¡Todas las tareas están al día!</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .student-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto;
+  }
+
+  .stat-card {
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(0, 123, 255, 0.05);
+  }
+
+  .stat-card h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .timeline-marker {
+    position: absolute;
+    left: -25px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+
+  .timeline-content {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  .badge.fs-6 {
+    font-size: 1rem !important;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+  }
+</style>
+{% endblock %}

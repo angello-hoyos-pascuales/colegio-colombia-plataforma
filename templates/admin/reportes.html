@@ -1,0 +1,264 @@
+{% extends "base.html" %} {% block title %}Reportes y Estadísticas -
+Administrador{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="fas fa-chart-bar text-primary me-2"></i>
+      Reportes y Estadísticas
+    </h1>
+    <div>
+      <a
+        href="{{ url_for('admin.exportar_reportes') }}"
+        class="btn btn-success"
+      >
+        <i class="fas fa-download me-1"></i>Exportar CSV
+      </a>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Volver
+      </a>
+    </div>
+  </div>
+
+  <!-- Estadísticas Generales -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-chart-pie text-primary me-2"></i>Estadísticas Generales
+      </h4>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="fas fa-users fa-2x me-2"></i>
+            <div>
+              <h3 class="mb-0">{{ total_usuarios }}</h3>
+              <small>Total Usuarios</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+      <div class="card bg-success text-white">
+        <div class="card-body text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="fas fa-user-graduate fa-2x me-2"></i>
+            <div>
+              <h3 class="mb-0">{{ total_estudiantes }}</h3>
+              <small>Estudiantes</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+      <div class="card bg-info text-white">
+        <div class="card-body text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="fas fa-chalkboard-teacher fa-2x me-2"></i>
+            <div>
+              <h3 class="mb-0">{{ total_profesores }}</h3>
+              <small>Profesores</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="fas fa-graduation-cap fa-2x me-2"></i>
+            <div>
+              <h3 class="mb-0">{{ total_cursos }}</h3>
+              <small>Cursos</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+      <div class="card bg-secondary text-white">
+        <div class="card-body text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="fas fa-book fa-2x me-2"></i>
+            <div>
+              <h3 class="mb-0">{{ total_asignaturas }}</h3>
+              <small>Asignaturas</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+      <div class="card bg-dark text-white">
+        <div class="card-body text-center">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="fas fa-star fa-2x me-2"></i>
+            <div>
+              <h3 class="mb-0">{{ total_calificaciones }}</h3>
+              <small>Calificaciones</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas por Curso -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-school text-primary me-2"></i>Estadísticas por Curso
+      </h4>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Curso</th>
+                  <th>Total Estudiantes</th>
+                  <th>Promedio General</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for curso in estadisticas_cursos %}
+                <tr>
+                  <td>
+                    <strong>{{ curso.grado }}{{ curso.seccion }}</strong>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary"
+                      >{{ curso.total_estudiantes }}</span
+                    >
+                  </td>
+                  <td>
+                    {% if curso.promedio_general %}
+                    <span
+                      class="badge bg-{% if curso.promedio_general >= 4.0 %}success{% elif curso.promedio_general >= 3.5 %}warning{% else %}danger{% endif %}"
+                    >
+                      {{ "%.1f"|format(curso.promedio_general) }}
+                    </span>
+                    {% else %}
+                    <span class="text-muted">Sin calificaciones</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if curso.promedio_general %} {% if curso.promedio_general
+                    >= 4.0 %}
+                    <span class="badge bg-success">Excelente</span>
+                    {% elif curso.promedio_general >= 3.5 %}
+                    <span class="badge bg-warning">Bueno</span>
+                    {% else %}
+                    <span class="badge bg-danger">Requiere Atención</span>
+                    {% endif %} {% else %}
+                    <span class="badge bg-secondary">En Proceso</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rendimiento por Asignatura -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-chart-line text-primary me-2"></i>Rendimiento por
+        Asignatura
+      </h4>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Asignatura</th>
+                  <th>Total Calificaciones</th>
+                  <th>Promedio</th>
+                  <th>Nota Mínima</th>
+                  <th>Nota Máxima</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for asignatura in rendimiento_asignaturas %}
+                <tr>
+                  <td><strong>{{ asignatura.nombre }}</strong></td>
+                  <td>
+                    <span class="badge bg-info"
+                      >{{ asignatura.total_calificaciones }}</span
+                    >
+                  </td>
+                  <td>
+                    <span
+                      class="badge bg-{% if asignatura.promedio >= 4.0 %}success{% elif asignatura.promedio >= 3.5 %}warning{% else %}danger{% endif %}"
+                    >
+                      {{ "%.1f"|format(asignatura.promedio) }}
+                    </span>
+                  </td>
+                  <td>{{ "%.1f"|format(asignatura.nota_minima) }}</td>
+                  <td>{{ "%.1f"|format(asignatura.nota_maxima) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actividad Reciente -->
+  <div class="row">
+    <div class="col-12">
+      <h4 class="mb-3">
+        <i class="fas fa-clock text-primary me-2"></i>Actividad Reciente
+      </h4>
+      <div class="card">
+        <div class="card-body">
+          {% if actividad_reciente %}
+          <div class="list-group list-group-flush">
+            {% for calificacion, estudiante, tarea, asignatura in
+            actividad_reciente %}
+            <div class="list-group-item">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">
+                  {{ estudiante.nombre_completo }} - {{ asignatura.nombre }}
+                </h6>
+                <small
+                  >{{ calificacion.fecha_calificacion.strftime('%d/%m/%Y %H:%M')
+                  if calificacion.fecha_calificacion else 'Fecha no disponible'
+                  }}</small
+                >
+              </div>
+              <p class="mb-1">{{ tarea.titulo }}</p>
+              <small>
+                Calificación:
+                <span
+                  class="badge bg-{% if calificacion.nota >= 4.0 %}success{% elif calificacion.nota >= 3.5 %}warning{% else %}danger{% endif %}"
+                >
+                  {{ calificacion.nota }}
+                </span>
+              </small>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-4">
+            No hay actividad reciente registrada.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

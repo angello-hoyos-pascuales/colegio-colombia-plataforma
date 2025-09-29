@@ -73,8 +73,8 @@ Colombia{% endblock %} {% block content %}
               <strong>{{ horario.asignatura.nombre }}</strong><br />
               <small class="text-muted">
                 {{ horario.curso.nombre_completo }} - {{ horario.aula }}
-                <br />Prof. {{ horario.profesor.nombre }} {{
-                horario.profesor.apellido }}
+                <br />Prof. {{ horario.profesor.nombres }} {{
+                horario.profesor.apellidos }}
               </small>
             </div>
             <div class="text-end">
@@ -107,8 +107,8 @@ Colombia{% endblock %} {% block content %}
           >
             <div>
               <strong
-                >Prof. {{ ausencia.profesor.nombre }} {{
-                ausencia.profesor.apellido }}</strong
+                >Prof. {{ ausencia.profesor.nombres }} {{
+                ausencia.profesor.apellidos }}</strong
               ><br />
               <small class="text-muted">
                 {{ ausencia.horario.asignatura.nombre }} - {{
@@ -149,11 +149,11 @@ Colombia{% endblock %} {% block content %}
           >
             <div>
               <strong
-                >Prof. {{ reemplazo.profesor_reemplazo.nombre }} {{
-                reemplazo.profesor_reemplazo.apellido }}</strong
+                >Prof. {{ reemplazo.profesor_reemplazo.nombres }} {{
+                reemplazo.profesor_reemplazo.apellidos }}</strong
               ><br />
               <small class="text-muted">
-                Reemplaza a: Prof. {{ reemplazo.profesor_ausente.nombre }}<br />
+                Reemplaza a: Prof. {{ reemplazo.profesor_ausente.nombres }}<br />
                 {{ reemplazo.horario_original.asignatura.nombre }} - {{
                 reemplazo.horario_original.curso.nombre_completo }}
               </small>
@@ -235,7 +235,7 @@ Colombia{% endblock %} {% block content %}
                   <td>{{ horario.asignatura.nombre }}</td>
                   <td>{{ horario.curso.nombre_completo }}</td>
                   <td>
-                    {{ horario.profesor.nombre }} {{ horario.profesor.apellido
+                    {{ horario.profesor.nombres }} {{ horario.profesor.apellidos
                     }}
                   </td>
                   <td>{{ horario.aula }}</td>

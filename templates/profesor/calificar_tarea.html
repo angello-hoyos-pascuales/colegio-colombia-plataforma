@@ -89,7 +89,8 @@
                       class="btn btn-sm btn-outline-primary"
                     >
                       <i class="fas fa-download me-1"></i>
-                      {{ entrega.archivo.split('/')[-1] }}
+                      {{ entrega.archivo|basename if entrega.archivo else
+                      'archivo.txt' }}
                     </a>
                     {% else %}
                     <span class="text-muted">Sin archivo</span>

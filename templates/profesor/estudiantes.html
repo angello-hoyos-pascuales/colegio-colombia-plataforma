@@ -65,8 +65,8 @@
         <div
           class="col-md-6 col-lg-4 mb-4 estudiante-card"
           data-curso="{{ curso_info.curso }}"
-          data-nombre="{{ estudiante.nombre_completo.lower() }}"
-          data-email="{{ estudiante.email.lower() }}"
+          data-nombre="{{ estudiante.nombre_completo|lower }}"
+          data-email="{{ estudiante.email|lower }}"
         >
           <div class="card h-100">
             <div

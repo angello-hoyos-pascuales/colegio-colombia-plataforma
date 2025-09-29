@@ -26,8 +26,8 @@ Administrador{% endblock %} {% block content %}
           Ausencia Reportada
         </h5>
         <p class="mb-2">
-          <strong>Profesor Ausente:</strong> {{ profesor_ausente.nombre }} {{
-          profesor_ausente.apellido }}<br />
+          <strong>Profesor Ausente:</strong> {{ profesor_ausente.nombres }} {{
+          profesor_ausente.apellidos }}<br />
           <strong>Fecha:</strong> {{ fecha_ausencia.strftime('%d/%m/%Y') }} ({{
           fecha_ausencia.strftime('%A') | capitalize }})<br />
           <strong>Clases Afectadas:</strong> {{ clases_afectadas|length }}
@@ -103,8 +103,8 @@ Administrador{% endblock %} {% block content %}
                     <div class="d-flex align-items-center">
                       <div class="flex-grow-1">
                         <strong
-                          >{{ reemplazo.profesor.nombre }} {{
-                          reemplazo.profesor.apellido }}</strong
+                          >{{ reemplazo.profesor.nombres }} {{
+                          reemplazo.profesor.apellidos }}</strong
                         >
                         <br />
                         <small class="text-muted">

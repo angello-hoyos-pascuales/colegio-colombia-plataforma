@@ -174,16 +174,16 @@
             </div>
             <div class="module-actions">
               <a
-                href="{{ url_for('admin.dashboard') }}"
+                href="{{ url_for('admin.reportes') }}"
                 class="btn btn-secondary btn-sm me-2"
               >
                 <i class="fas fa-chart-line me-1"></i>Ver Reportes
               </a>
               <a
-                href="{{ url_for('admin.dashboard') }}"
+                href="{{ url_for('admin.exportar_reportes') }}"
                 class="btn btn-outline-secondary btn-sm"
               >
-                <i class="fas fa-analytics me-1"></i>Estadísticas
+                <i class="fas fa-download me-1"></i>Exportar CSV
               </a>
             </div>
           </div>
@@ -205,17 +205,84 @@
             </div>
             <div class="module-actions">
               <a
-                href="{{ url_for('admin.dashboard') }}"
+                href="{{ url_for('admin.configuracion') }}"
                 class="btn btn-dark btn-sm me-2"
               >
                 <i class="fas fa-cogs me-1"></i>Configurar
               </a>
               <a
-                href="{{ url_for('admin.dashboard') }}"
+                href="{{ url_for('admin.crear_backup') }}"
                 class="btn btn-outline-dark btn-sm"
               >
                 <i class="fas fa-download me-1"></i>Backup
               </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Módulos de Análisis Académico -->
+  <div class="col-12">
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <h4 class="mb-3">
+          <i class="fas fa-chart-line text-success me-2"></i>Análisis Académico
+        </h4>
+      </div>
+
+      <!-- Análisis de Estudiantes -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-success rounded p-2 me-3">
+                <i class="fas fa-user-graduate fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Análisis de Estudiantes</h5>
+                <small class="text-muted">Seguimiento académico individual</small>
+              </div>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('admin.buscar_estudiantes') }}"
+                class="btn btn-success btn-sm me-2"
+              >
+                <i class="fas fa-search me-1"></i>Buscar Estudiantes
+              </a>
+              <a
+                href="{{ url_for('admin.buscar_estudiantes') }}?curso_id="
+                class="btn btn-outline-success btn-sm"
+              >
+                <i class="fas fa-users me-1"></i>Por Curso
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Placeholder para futuro módulo -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-warning rounded p-2 me-3">
+                <i class="fas fa-chart-pie fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Análisis Comparativo</h5>
+                <small class="text-muted">Comparación entre estudiantes y cursos</small>
+              </div>
+            </div>
+            <div class="module-actions">
+              <button class="btn btn-warning btn-sm me-2" disabled>
+                <i class="fas fa-construction me-1"></i>Próximamente
+              </button>
+              <button class="btn btn-outline-warning btn-sm" disabled>
+                <i class="fas fa-tools me-1"></i>En Desarrollo
+              </button>
             </div>
           </div>
         </div>

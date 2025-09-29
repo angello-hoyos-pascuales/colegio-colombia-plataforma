@@ -217,13 +217,13 @@
               <div class="info-item">
                 <div class="info-label">Fecha de Registro</div>
                 <div class="info-value">
-                  {{ current_user.fecha_registro.strftime('%d de %B de %Y') }}
+                  {{ current_user.fecha_creacion.strftime('%d de %B de %Y') }}
                 </div>
               </div>
               <div class="info-item">
                 <div class="info-label">Código Estudiantil</div>
                 <div class="info-value">
-                  EST-{{ current_user.id|string.zfill(6) }}
+                  EST-{{ "%06d"|format(current_user.id) }}
                 </div>
               </div>
             </div>
@@ -331,9 +331,13 @@
           {% if actividad_reciente %} {% for actividad in actividad_reciente %}
           <div class="activity-item">
             <div class="activity-date">
-              {{ actividad.fecha.strftime('%d/%m/%Y %H:%M') }}
+              {{ actividad.fecha.strftime('%d/%m/%Y %H:%M') if actividad.fecha
+              else 'Fecha no disponible' }}
             </div>
-            <div>{{ actividad.descripcion }}</div>
+            <div>
+              {{ actividad.descripcion if actividad.descripcion else 'Sin
+              descripción' }}
+            </div>
           </div>
           {% endfor %} {% else %}
           <p class="text-muted mb-0">No hay actividad reciente registrada.</p>
@@ -349,8 +353,8 @@
         <div class="info-item">
           <div class="info-label">Último acceso</div>
           <div class="info-value">
-            {% if current_user.ultimo_acceso %} {{
-            current_user.ultimo_acceso.strftime('%d/%m/%Y %H:%M') }} {% else %}
+            {% if current_user.fecha_creacion %} {{
+            current_user.fecha_creacion.strftime('%d/%m/%Y %H:%M') }} {% else %}
             Primer acceso {% endif %}
           </div>
         </div>

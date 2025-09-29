@@ -1,0 +1,169 @@
+{% extends "base.html" %} {% block title %}Mis Asignaturas - Profesor{% endblock
+%} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <!-- Encabezado -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2><i class="fas fa-book me-2"></i>Mis Asignaturas</h2>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="{{ url_for('profesor.dashboard') }}">Dashboard</a>
+              </li>
+              <li class="breadcrumb-item active">Mis Asignaturas</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Lista de Asignaturas -->
+      {% if stats_asignaturas %}
+      <div class="row">
+        {% for item in stats_asignaturas %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header bg-primary text-white">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-book me-2"></i>{{ item.asignatura.nombre }}
+              </h5>
+              <small class="opacity-75"
+                >{{ item.asignatura.curso.nombre }}</small
+              >
+            </div>
+            <div class="card-body">
+              <!-- Estadísticas -->
+              <div class="row text-center mb-3">
+                <div class="col-6">
+                  <h4 class="mb-0 text-info">{{ item.estudiantes_count }}</h4>
+                  <small class="text-muted">Estudiantes</small>
+                </div>
+                <div class="col-6">
+                  <h4 class="mb-0 text-warning">{{ item.tareas_count }}</h4>
+                  <small class="text-muted">Tareas</small>
+                </div>
+              </div>
+
+              <div class="row text-center mb-3">
+                <div class="col-6">
+                  <h4 class="mb-0 text-success">
+                    {{ item.calificaciones_count }}
+                  </h4>
+                  <small class="text-muted">Calificaciones</small>
+                </div>
+                <div class="col-6">
+                  <h4
+                    class="mb-0 {% if item.promedio >= 4.0 %}text-success {% elif item.promedio >= 3.0 %}text-warning {% else %}text-danger {% endif %}"
+                  >
+                    {% if item.promedio %} {{ "%.1f"|format(item.promedio) }} {%
+                    else %} N/A {% endif %}
+                  </h4>
+                  <small class="text-muted">Promedio</small>
+                </div>
+              </div>
+
+              <!-- Información adicional -->
+              <div class="mb-3">
+                <strong>Descripción:</strong>
+                <p class="text-muted small">
+                  {% if item.asignatura.descripcion %} {{
+                  item.asignatura.descripcion[:100] }}{% if
+                  item.asignatura.descripcion|length > 100 %}...{% endif %} {%
+                  else %} Sin descripción disponible {% endif %}
+                </p>
+              </div>
+
+              <!-- Badges -->
+              <div class="mb-3">
+                <span class="badge bg-secondary"
+                  >{{ item.asignatura.codigo }}</span
+                >
+                <span class="badge bg-info"
+                  >{{ item.asignatura.creditos }} créditos</span
+                >
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="d-grid gap-2">
+                <a
+                  href="{{ url_for('profesor.tareas') }}?asignatura={{ item.asignatura.id }}"
+                  class="btn btn-primary btn-sm"
+                >
+                  <i class="fas fa-tasks me-1"></i>Ver Tareas
+                </a>
+                <div class="btn-group" role="group">
+                  <a
+                    href="{{ url_for('profesor.estudiantes') }}?curso={{ item.asignatura.curso.id }}"
+                    class="btn btn-outline-secondary btn-sm"
+                  >
+                    <i class="fas fa-users me-1"></i>Estudiantes
+                  </a>
+                  <a
+                    href="{{ url_for('profesor.calificaciones') }}?asignatura={{ item.asignatura.id }}"
+                    class="btn btn-outline-warning btn-sm"
+                  >
+                    <i class="fas fa-star me-1"></i>Calificaciones
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <!-- Sin asignaturas -->
+      <div class="text-center py-5">
+        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No tienes asignaturas asignadas</h4>
+        <p class="text-muted">
+          Contacta al administrador para que te asigne asignaturas.
+        </p>
+        <a href="{{ url_for('profesor.dashboard') }}" class="btn btn-primary">
+          <i class="fas fa-home me-2"></i>Volver al Dashboard
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Resumen -->
+      {% if stats_asignaturas %}
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i>Resumen General
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3">
+              <h4 class="mb-0 text-primary">{{ stats_asignaturas|length }}</h4>
+              <small class="text-muted">Total Asignaturas</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="mb-0 text-info">
+                {{ stats_asignaturas|map(attribute='estudiantes_count')|sum }}
+              </h4>
+              <small class="text-muted">Total Estudiantes</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="mb-0 text-warning">
+                {{ stats_asignaturas|map(attribute='tareas_count')|sum }}
+              </h4>
+              <small class="text-muted">Total Tareas</small>
+            </div>
+            <div class="col-md-3">
+              <h4 class="mb-0 text-success">
+                {{ stats_asignaturas|map(attribute='calificaciones_count')|sum
+                }}
+              </h4>
+              <small class="text-muted">Total Calificaciones</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

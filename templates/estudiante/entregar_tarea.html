@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Entregar Tarea: {{ tarea.nombre }}{%
+{% extends "base.html" %} {% block title %}Entregar Tarea: {{ tarea.titulo }}{%
 endblock %} {% block extra_css %}
 <style>
   .entrega-header {
@@ -103,7 +103,7 @@ endblock %} {% block extra_css %}
     <div class="d-flex justify-content-between align-items-start">
       <div>
         <h2 class="mb-2">Entregar Tarea</h2>
-        <h4 class="mb-2 opacity-90">{{ tarea.nombre }}</h4>
+        <h4 class="mb-2 opacity-90">{{ tarea.titulo }}</h4>
         <p class="mb-0 opacity-75">
           <i class="fas fa-book me-2"></i>{{ tarea.asignatura.nombre }}
           <span class="mx-3">|</span>
@@ -115,9 +115,9 @@ endblock %} {% block extra_css %}
       <div class="text-end">
         <small class="opacity-75 d-block">Fecha límite:</small>
         <strong class="d-block"
-          >{{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }}</strong
+          >{{ tarea.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}</strong
         >
-        {% set dias_restantes = (tarea.fecha_vencimiento.date() -
+        {% set dias_restantes = (tarea.fecha_entrega.date() -
         moment().date()).days %} {% if dias_restantes is not none %} {% if
         dias_restantes > 0 %}
         <small class="opacity-75">({{ dias_restantes }} días restantes)</small>
@@ -140,7 +140,7 @@ endblock %} {% block extra_css %}
       </li>
       <li class="breadcrumb-item">
         <a href="{{ url_for('estudiante.detalle_tarea', id=tarea.id) }}"
-          >{{ tarea.nombre }}</a
+          >{{ tarea.titulo }}</a
         >
       </li>
       <li class="breadcrumb-item active">Entregar</li>
@@ -148,7 +148,7 @@ endblock %} {% block extra_css %}
   </nav>
 
   <!-- Alerta de urgencia -->
-  {% if tarea.fecha_vencimiento and (tarea.fecha_vencimiento.date() -
+  {% if tarea.fecha_entrega and (tarea.fecha_entrega.date() -
   moment().date()).days <= 1 %}
   <div class="alert urgente-alert text-white" role="alert">
     <h5 class="alert-heading">
@@ -173,14 +173,14 @@ endblock %} {% block extra_css %}
           <form method="POST" enctype="multipart/form-data" id="entregaForm">
             {{ form.hidden_tag() }}
 
-            <!-- Comentario -->
+            <!-- Comentarios -->
             <div class="mb-4">
-              {{ form.comentario.label(class="form-label fw-bold") }} {{
-              form.comentario(class="form-control", rows="4",
+              {{ form.comentarios.label(class="form-label fw-bold") }} {{
+              form.comentarios(class="form-control", rows="4",
               placeholder="Escribe aquí cualquier comentario o aclaración sobre
-              tu entrega...") }} {% if form.comentario.errors %}
+              tu entrega...") }} {% if form.comentarios.errors %}
               <div class="text-danger mt-1">
-                {% for error in form.comentario.errors %}
+                {% for error in form.comentarios.errors %}
                 <small>{{ error }}</small>
                 {% endfor %}
               </div>
@@ -288,11 +288,11 @@ endblock %} {% block extra_css %}
           </p>
         </div>
 
-        {% if tarea.fecha_vencimiento %}
+        {% if tarea.fecha_entrega %}
         <div class="mb-3">
           <strong>Fecha límite:</strong>
           <p class="mb-0">
-            {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }}
+            {{ tarea.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}
           </p>
         </div>
         {% endif %} {% if tarea.valor_puntos %}
@@ -466,8 +466,8 @@ endblock %} {% block extra_css %}
 
       // Countdown timer
       const countdownElement = document.getElementById('timeRemaining');
-      {% if tarea.fecha_vencimiento %}
-      const deadline = new Date('{{ tarea.fecha_vencimiento.isoformat() }}');
+      {% if tarea.fecha_entrega %}
+      const deadline = new Date('{{ tarea.fecha_entrega.isoformat() }}');
 
       function updateCountdown() {
           const now = new Date();

@@ -10,8 +10,7 @@ endblock %} {% block content %}
             Calificar Entrega
           </h4>
           <small class="text-muted">
-            {{ entrega.tarea.titulo }} - {{ entrega.estudiante.nombre_completo
-            }}
+            {{ tarea.titulo }} - {{ estudiante.nombre_completo }}
           </small>
         </div>
         <div class="card-body">
@@ -20,67 +19,48 @@ endblock %} {% block content %}
             <div class="col-md-6">
               <h6>Información de la Tarea:</h6>
               <ul class="list-unstyled">
-                <li><strong>Título:</strong> {{ entrega.tarea.titulo }}</li>
+                <li><strong>Título:</strong> {{ tarea.titulo }}</li>
                 <li>
-                  <strong>Asignatura:</strong> {{
-                  entrega.tarea.asignatura.nombre }}
+                  <strong>Asignatura:</strong> {{ tarea.asignatura.nombre }}
                 </li>
                 <li>
                   <strong>Curso:</strong> {{
-                  entrega.tarea.asignatura.curso.nombre_completo }}
+                  tarea.asignatura.curso.nombre_completo }}
                 </li>
                 <li>
-                  <strong>Valor:</strong> {{ entrega.tarea.valor_puntos }}
-                  puntos
+                  <strong>Valor:</strong> {{ tarea.valor_puntos or 'No
+                  especificado' }} puntos
                 </li>
                 <li>
                   <strong>Fecha límite:</strong> {{
-                  entrega.tarea.fecha_entrega.strftime('%d/%m/%Y') }}
+                  tarea.fecha_entrega.strftime('%d/%m/%Y') }}
                 </li>
               </ul>
             </div>
             <div class="col-md-6">
-              <h6>Información de la Entrega:</h6>
+              <h6>Información del Estudiante:</h6>
               <ul class="list-unstyled">
                 <li>
-                  <strong>Estudiante:</strong> {{
-                  entrega.estudiante.nombre_completo }}
+                  <strong>Estudiante:</strong> {{ estudiante.nombre_completo }}
                 </li>
-                <li><strong>Email:</strong> {{ entrega.estudiante.email }}</li>
+                <li><strong>Email:</strong> {{ estudiante.email }}</li>
                 <li>
-                  <strong>Fecha entrega:</strong>
-                  <span
-                    class="{% if entrega.fecha_entrega > entrega.tarea.fecha_entrega %}text-danger{% else %}text-success{% endif %}"
-                  >
-                    {{ entrega.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}
-                  </span>
-                  {% if entrega.fecha_entrega > entrega.tarea.fecha_entrega %}
-                  <br /><small class="text-danger">Entrega tardía</small>
-                  {% endif %}
+                  <strong>Documento:</strong> {{ estudiante.numero_documento }}
                 </li>
-                {% if entrega.archivo %}
+                {% if calificacion %}
                 <li>
-                  <strong>Archivo:</strong>
-                  <a
-                    href="{{ url_for('static', filename='uploads/' + entrega.archivo) }}"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-primary"
-                  >
-                    <i class="fas fa-download me-1"></i>
-                    Descargar
-                  </a>
+                  <strong>Calificación actual:</strong>
+                  <span class="badge bg-primary">{{ calificacion.nota }}</span>
+                </li>
+                {% else %}
+                <li>
+                  <strong>Estado:</strong>
+                  <span class="badge bg-warning">Sin calificar</span>
                 </li>
                 {% endif %}
               </ul>
             </div>
           </div>
-
-          {% if entrega.comentarios %}
-          <div class="mb-4">
-            <h6>Comentarios del Estudiante:</h6>
-            <div class="alert alert-light">{{ entrega.comentarios }}</div>
-          </div>
-          {% endif %}
 
           <!-- Formulario de calificación -->
           <form method="POST">
@@ -132,7 +112,7 @@ endblock %} {% block content %}
 
             <div class="d-flex justify-content-between">
               <a
-                href="{{ url_for('profesor.calificar_tarea', tarea_id=entrega.tarea.id) }}"
+                href="{{ url_for('profesor.calificar_tarea', id=tarea.id) }}"
                 class="btn btn-secondary"
               >
                 <i class="fas fa-arrow-left me-2"></i>Volver

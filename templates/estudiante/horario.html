@@ -176,10 +176,10 @@
           <i class="fas fa-clock me-2"></i>Información Actual
         </h6>
         <p class="mb-0">
-          <strong>Hoy:</strong> {{ moment().strftime('%A, %d de %B de %Y') }}
+          <strong>Hoy:</strong> <span id="currentDate"></span>
           <span class="mx-3">|</span>
           <strong>Hora actual:</strong>
-          <span id="currentTime">{{ moment().strftime('%H:%M:%S') }}</span>
+          <span id="currentTime"></span>
         </p>
       </div>
       <div class="legend">
@@ -377,7 +377,7 @@
 {% endblock %} {% block extra_js %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Actualizar hora actual cada segundo
+    // Actualizar hora y fecha actual cada segundo
     function updateCurrentTime() {
       const now = new Date();
       const timeString = now.toLocaleTimeString("es-CO", {
@@ -386,10 +386,18 @@
         minute: "2-digit",
         second: "2-digit",
       });
+      const dateString = now.toLocaleDateString("es-CO", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
       document.getElementById("currentTime").textContent = timeString;
+      document.getElementById("currentDate").textContent = dateString;
     }
 
-    // Actualizar cada segundo
+    // Llamar inmediatamente y luego cada segundo
+    updateCurrentTime();
     setInterval(updateCurrentTime, 1000);
 
     // Animación de entrada para las celdas

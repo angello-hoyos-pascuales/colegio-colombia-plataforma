@@ -50,6 +50,15 @@ def create_app():
         result = re.sub(r'\r\n|\r|\n', '<br>', str(text))
         return Markup(result)
     
+    # Filtro personalizado basename para obtener el nombre del archivo
+    @app.template_filter('basename')
+    def basename_filter(path):
+        """Obtiene el nombre del archivo de una ruta"""
+        if not path:
+            return 'archivo'
+        import os
+        return os.path.basename(path)
+    
     # Registrar blueprints
     from routes.main_routes import main_bp
     from routes.admin_routes import admin_bp

@@ -139,7 +139,7 @@
               notificacion.tarea_relacionada %}
               <div class="mt-3">
                 <a
-                  href="{{ url_for('profesor.ver_tarea', tarea_id=notificacion.tarea_relacionada.id) }}"
+                  href="{{ url_for('profesor.calificar_tarea', id=notificacion.tarea_relacionada.id) }}"
                   class="btn btn-outline-primary btn-sm"
                 >
                   <i class="fas fa-eye me-2"></i>Ver Tarea

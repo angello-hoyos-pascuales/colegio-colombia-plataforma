@@ -328,3 +328,101 @@ def contactar_estudiante(estudiante_id):
     # Por ahora, solo mostrar información de contacto
     flash(f'Funcionalidad de contacto en desarrollo. Email del estudiante: {estudiante.email}', 'info')
     return redirect(url_for('profesor.estudiantes'))
+
+@profesor_bp.route('/calificaciones')
+@login_required
+@profesor_required
+def calificaciones():
+    """Ver todas las calificaciones del profesor"""
+    # Obtener todas las calificaciones de las tareas del profesor
+    calificaciones = db.session.query(Calificacion).join(Tarea).filter(
+        Tarea.profesor_id == current_user.id
+    ).order_by(Calificacion.fecha_calificacion.desc()).all()
+    
+    # Estadísticas
+    total_calificaciones = len(calificaciones)
+    promedio_general = 0
+    if calificaciones:
+        promedio_general = sum(c.nota for c in calificaciones) / total_calificaciones
+    
+    aprobadas = len([c for c in calificaciones if c.nota >= 3.0])
+    reprobadas = len([c for c in calificaciones if c.nota < 3.0])
+    
+    return render_template('profesor/calificaciones.html',
+                         calificaciones=calificaciones,
+                         total_calificaciones=total_calificaciones,
+                         promedio_general=promedio_general,
+                         aprobadas=aprobadas,
+                         reprobadas=reprobadas)
+
+@profesor_bp.route('/asignaturas')
+@login_required
+@profesor_required
+def asignaturas():
+    """Ver mis asignaturas"""
+    asignaturas = current_user.asignaturas_enseñadas
+    
+    # Estadísticas por asignatura
+    stats_asignaturas = []
+    for asignatura in asignaturas:
+        tareas_count = Tarea.query.filter_by(asignatura_id=asignatura.id, activa=True).count()
+        estudiantes_count = len(asignatura.curso.estudiantes.all())
+        
+        # Calificaciones de esta asignatura
+        calificaciones = db.session.query(Calificacion).join(Tarea).filter(
+            Tarea.asignatura_id == asignatura.id
+        ).all()
+        
+        promedio = 0
+        if calificaciones:
+            promedio = sum(c.nota for c in calificaciones) / len(calificaciones)
+        
+        stats_asignaturas.append({
+            'asignatura': asignatura,
+            'tareas_count': tareas_count,
+            'estudiantes_count': estudiantes_count,
+            'calificaciones_count': len(calificaciones),
+            'promedio': promedio
+        })
+    
+    return render_template('profesor/asignaturas.html', stats_asignaturas=stats_asignaturas)
+
+@profesor_bp.route('/horario')
+@login_required
+@profesor_required
+def horario():
+    """Ver mi horario de clases"""
+    from models import Horario
+    
+    # Obtener horarios del profesor para sus asignaturas
+    horarios = []
+    for asignatura in current_user.asignaturas_enseñadas:
+        horarios_asignatura = Horario.query.filter_by(
+            asignatura_id=asignatura.id,
+            curso_id=asignatura.curso_id
+        ).all()
+        horarios.extend(horarios_asignatura)
+    
+    # Organizar horarios por día
+    dias_semana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+    horario_semanal = {dia: [] for dia in dias_semana}
+    
+    for horario in horarios:
+        if horario.dia_semana in horario_semanal:
+            horario_semanal[horario.dia_semana].append(horario)
+    
+    # Ordenar por hora de inicio
+    for dia in horario_semanal:
+        horario_semanal[dia].sort(key=lambda h: h.hora_inicio)
+    
+    # Obtener día actual en español
+    import calendar
+    today = datetime.now()
+    day_number = today.weekday()  # 0=Monday, 6=Sunday
+    dias_espanol = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    dia_actual = dias_espanol[day_number]
+
+    return render_template('profesor/horario.html', 
+                         horario_semanal=horario_semanal,
+                         dias_semana=dias_semana,
+                         dia_actual=dia_actual)

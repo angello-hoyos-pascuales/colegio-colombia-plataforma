@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Buscar Estudiantes - Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-search text-primary me-2"></i>
+            Buscar Estudiantes
+        </h1>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulario de Búsqueda -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin.buscar_estudiantes') }}">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="busqueda" class="form-label">Buscar por nombre, apellido, documento o email</label>
+                        <input type="text" class="form-control" id="busqueda" name="busqueda" 
+                               value="{{ busqueda or '' }}" placeholder="Ingrese términos de búsqueda...">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="curso_id" class="form-label">Filtrar por curso</label>
+                        <select class="form-select" id="curso_id" name="curso_id">
+                            <option value="">Todos los cursos</option>
+                            {% for curso in cursos %}
+                            <option value="{{ curso.id }}" {{ 'selected' if curso_id == curso.id else '' }}>
+                                {{ curso.grado }}{{ curso.seccion }} - {{ curso.año_academico }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i>Buscar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resultados de Búsqueda -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-users me-2"></i>
+                Estudiantes Encontrados ({{ estudiantes_stats|length }})
+            </h5>
+            {% if estudiantes_stats %}
+            <small class="text-muted">
+                Haz clic en "Ver Perfil" para ver información académica completa
+            </small>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if estudiantes_stats %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Documento</th>
+                            <th>Email</th>
+                            <th>Curso(s)</th>
+                            <th class="text-center">Promedio</th>
+                            <th class="text-center">Calificaciones</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in estudiantes_stats %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle me-2">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <div>
+                                        <strong>{{ item.estudiante.nombres }} {{ item.estudiante.apellidos }}</strong>
+                                        <br><small class="text-muted">{{ item.estudiante.tipo_documento }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ item.estudiante.numero_documento }}</td>
+                            <td>{{ item.estudiante.email }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ item.cursos }}</span>
+                            </td>
+                            <td class="text-center">
+                                {% if item.promedio > 0 %}
+                                    {% if item.promedio >= 4.0 %}
+                                        <span class="badge bg-success fs-6">{{ item.promedio }}</span>
+                                    {% elif item.promedio >= 3.0 %}
+                                        <span class="badge bg-warning fs-6">{{ item.promedio }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger fs-6">{{ item.promedio }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6">Sin calificaciones</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-primary">{{ item.total_calificaciones }}</span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('admin.perfil_estudiante', estudiante_id=item.estudiante.id) }}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>Ver Perfil
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No se encontraron estudiantes</h5>
+                <p class="text-muted">
+                    {% if busqueda or curso_id %}
+                    Intenta ajustar los filtros de búsqueda.
+                    {% else %}
+                    Utiliza los filtros para buscar estudiantes específicos.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.badge.fs-6 {
+    font-size: 1rem !important;
+    padding: 0.5rem 0.8rem;
+}
+</style>
+{% endblock %}

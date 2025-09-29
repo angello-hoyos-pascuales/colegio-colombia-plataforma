@@ -23,10 +23,10 @@
             >
               <h6 class="card-title mb-0">{{ tarea.titulo }}</h6>
               <span
-                class="badge {% if tarea.fecha_entrega < moment().date() %}bg-danger{% else %}bg-success{% endif %}"
+                class="badge {% if tarea.esta_vencida %}bg-danger{% else %}bg-success{% endif %}"
               >
-                {% if tarea.fecha_entrega < moment().date() %} Vencida {% else
-                %} Activa {% endif %}
+                {% if tarea.esta_vencida %} Vencida {% else %} Activa {% endif
+                %}
               </span>
             </div>
             <div class="card-body">
@@ -52,16 +52,10 @@
             <div class="card-footer">
               <div class="btn-group w-100" role="group">
                 <a
-                  href="{{ url_for('profesor.calificar_tarea', tarea_id=tarea.id) }}"
+                  href="{{ url_for('profesor.calificar_tarea', id=tarea.id) }}"
                   class="btn btn-outline-primary btn-sm"
                 >
                   <i class="fas fa-check me-1"></i>Calificar
-                </a>
-                <a
-                  href="{{ url_for('profesor.editar_tarea', tarea_id=tarea.id) }}"
-                  class="btn btn-outline-secondary btn-sm"
-                >
-                  <i class="fas fa-edit me-1"></i>Editar
                 </a>
               </div>
             </div>
