@@ -1,0 +1,249 @@
+{% extends "base.html" %} {% block title %}Gestión de Asignaturas -
+Administrador{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="fas fa-book text-primary me-2"></i>
+      Gestión de Asignaturas
+    </h1>
+    <div>
+      <a href="{{ url_for('admin.nueva_asignatura') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Nueva Asignatura
+      </a>
+      <a
+        href="{{ url_for('admin.dashboard') }}"
+        class="btn btn-outline-secondary"
+      >
+        <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <label class="form-label">Filtrar por Curso:</label>
+          <select class="form-select" onchange="filtrarAsignaturas()">
+            <option value="">Todos los cursos</option>
+            {% for curso in cursos_disponibles %}
+            <option value="{{ curso.id }}">{{ curso.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Filtrar por Materia:</label>
+          <select class="form-select" onchange="filtrarAsignaturas()">
+            <option value="">Todas las materias</option>
+            <option value="Matemáticas">Matemáticas</option>
+            <option value="Español">Español</option>
+            <option value="Ciencias">Ciencias</option>
+            <option value="Sociales">Sociales</option>
+            <option value="Inglés">Inglés</option>
+            <option value="Educación Física">Educación Física</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Buscar:</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Buscar por materia o profesor..."
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Asignaturas -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Lista de Asignaturas</h5>
+    </div>
+    <div class="card-body p-0">
+      {% if asignaturas %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Materia</th>
+              <th>Curso</th>
+              <th>Profesor</th>
+              <th>Horario</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for asignatura in asignaturas %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div
+                    class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                    style="width: 40px; height: 40px"
+                  >
+                    <i class="fas fa-book"></i>
+                  </div>
+                  <div>
+                    <strong>{{ asignatura.nombre }}</strong>
+                    <br /><small class="text-muted"
+                      >{{ asignatura.descripcion or 'Sin descripción' }}</small
+                    >
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-info fs-6"
+                  >{{ asignatura.curso.nombre }}</span
+                >
+              </td>
+              <td>
+                {% if asignatura.profesor %}
+                <div class="d-flex align-items-center">
+                  <div
+                    class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                    style="width: 32px; height: 32px"
+                  >
+                    <i class="fas fa-chalkboard-teacher"></i>
+                  </div>
+                  <div>
+                    <strong
+                      >{{ asignatura.profesor.nombre }} {{
+                      asignatura.profesor.apellido }}</strong
+                    >
+                    <br /><small class="text-muted"
+                      >{{ asignatura.profesor.email }}</small
+                    >
+                  </div>
+                </div>
+                {% else %}
+                <span class="text-muted">
+                  <i class="fas fa-user-slash me-1"></i>Sin asignar
+                </span>
+                {% endif %}
+              </td>
+              <td>
+                {% if asignatura.horarios %} {% for horario in
+                asignatura.horarios %}
+                <small class="badge bg-secondary me-1">
+                  {{ horario.dia }} {{ horario.hora_inicio }}-{{
+                  horario.hora_fin }}
+                </small>
+                {% endfor %} {% else %}
+                <span class="text-muted">
+                  <i class="fas fa-clock me-1"></i>Sin horario
+                </span>
+                {% endif %}
+              </td>
+              <td>
+                {% if asignatura.activo %}
+                <span class="badge bg-success">
+                  <i class="fas fa-check-circle me-1"></i>Activo
+                </span>
+                {% else %}
+                <span class="badge bg-warning">
+                  <i class="fas fa-pause-circle me-1"></i>Inactivo
+                </span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button
+                    class="btn btn-outline-info"
+                    data-bs-toggle="modal"
+                    data-bs-target="#verAsignaturaModal{{ asignatura.id }}"
+                    title="Ver detalles"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <a
+                    href="{{ url_for('admin.editar_asignatura', id=asignatura.id) }}"
+                    class="btn btn-outline-warning"
+                    title="Editar"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button
+                    class="btn btn-outline-danger"
+                    onclick="confirmarEliminacion({{ asignatura.id }}, '{{ asignatura.nombre }}')"
+                    title="Eliminar"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-book fa-3x text-muted mb-3"></i>
+        <h5>No hay asignaturas registradas</h5>
+        <p class="text-muted">Comienza creando tu primera asignatura</p>
+        <a
+          href="{{ url_for('admin.nueva_asignatura') }}"
+          class="btn btn-primary"
+        >
+          <i class="fas fa-plus me-1"></i>Crear Asignatura
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="confirmarEliminacionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Está seguro de que desea eliminar la asignatura
+          <strong id="nombreAsignaturaEliminar"></strong>?
+        </p>
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Esta acción eliminará también todas las tareas asociadas.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <form method="POST" id="formEliminarAsignatura" style="display: inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i>Eliminar Asignatura
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmarEliminacion(id, nombre) {
+    document.getElementById("nombreAsignaturaEliminar").textContent = nombre;
+    document.getElementById("formEliminarAsignatura").action =
+      "/admin/asignaturas/" + id + "/eliminar";
+    new bootstrap.Modal(
+      document.getElementById("confirmarEliminacionModal")
+    ).show();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends "base.html" %} {% block title %}Calificar Entrega - Profesor{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-star me-2"></i>
+            Calificar Entrega
+          </h4>
+          <small class="text-muted">
+            {{ entrega.tarea.titulo }} - {{ entrega.estudiante.nombre_completo
+            }}
+          </small>
+        </div>
+        <div class="card-body">
+          <!-- Información de la entrega -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h6>Información de la Tarea:</h6>
+              <ul class="list-unstyled">
+                <li><strong>Título:</strong> {{ entrega.tarea.titulo }}</li>
+                <li>
+                  <strong>Asignatura:</strong> {{
+                  entrega.tarea.asignatura.nombre }}
+                </li>
+                <li>
+                  <strong>Curso:</strong> {{
+                  entrega.tarea.asignatura.curso.nombre_completo }}
+                </li>
+                <li>
+                  <strong>Valor:</strong> {{ entrega.tarea.valor_puntos }}
+                  puntos
+                </li>
+                <li>
+                  <strong>Fecha límite:</strong> {{
+                  entrega.tarea.fecha_entrega.strftime('%d/%m/%Y') }}
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6>Información de la Entrega:</h6>
+              <ul class="list-unstyled">
+                <li>
+                  <strong>Estudiante:</strong> {{
+                  entrega.estudiante.nombre_completo }}
+                </li>
+                <li><strong>Email:</strong> {{ entrega.estudiante.email }}</li>
+                <li>
+                  <strong>Fecha entrega:</strong>
+                  <span
+                    class="{% if entrega.fecha_entrega > entrega.tarea.fecha_entrega %}text-danger{% else %}text-success{% endif %}"
+                  >
+                    {{ entrega.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}
+                  </span>
+                  {% if entrega.fecha_entrega > entrega.tarea.fecha_entrega %}
+                  <br /><small class="text-danger">Entrega tardía</small>
+                  {% endif %}
+                </li>
+                {% if entrega.archivo %}
+                <li>
+                  <strong>Archivo:</strong>
+                  <a
+                    href="{{ url_for('static', filename='uploads/' + entrega.archivo) }}"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-primary"
+                  >
+                    <i class="fas fa-download me-1"></i>
+                    Descargar
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+
+          {% if entrega.comentarios %}
+          <div class="mb-4">
+            <h6>Comentarios del Estudiante:</h6>
+            <div class="alert alert-light">{{ entrega.comentarios }}</div>
+          </div>
+          {% endif %}
+
+          <!-- Formulario de calificación -->
+          <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                {{ form.nota.label(class="form-label") }}
+                <div class="input-group">
+                  {{ form.nota(class="form-control", min="0", max="5",
+                  step="0.1") }}
+                  <span class="input-group-text">/5.0</span>
+                </div>
+                {% if form.nota.errors %}
+                <div class="text-danger">
+                  {% for error in form.nota.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                <div class="form-text">Nota de 0.0 a 5.0</div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                {{ form.periodo.label(class="form-label") }} {{
+                form.periodo(class="form-select") }} {% if form.periodo.errors
+                %}
+                <div class="text-danger">
+                  {% for error in form.periodo.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              {{ form.comentarios.label(class="form-label") }} {{
+              form.comentarios(class="form-control", rows="4",
+              placeholder="Retroalimentación para el estudiante...") }} {% if
+              form.comentarios.errors %}
+              <div class="text-danger">
+                {% for error in form.comentarios.errors %}
+                <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a
+                href="{{ url_for('profesor.calificar_tarea', tarea_id=entrega.tarea.id) }}"
+                class="btn btn-secondary"
+              >
+                <i class="fas fa-arrow-left me-2"></i>Volver
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>Guardar Calificación
+              </button>
+            </div>
+          </form>
+
+          <!-- Calificaciones anteriores -->
+          {% if calificaciones_anteriores %}
+          <div class="mt-4">
+            <h6>Historial de Calificaciones:</h6>
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Nota</th>
+                    <th>Periodo</th>
+                    <th>Comentarios</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for calificacion in calificaciones_anteriores %}
+                  <tr>
+                    <td>
+                      {{ calificacion.fecha_calificacion.strftime('%d/%m/%Y
+                      %H:%M') }}
+                    </td>
+                    <td><strong>{{ calificacion.nota }}/5.0</strong></td>
+                    <td>{{ calificacion.periodo }}</td>
+                    <td>
+                      {{ calificacion.comentarios[:50] }}{% if
+                      calificacion.comentarios|length > 50 %}...{% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const notaInput = document.getElementById("nota");
+    if (notaInput) {
+      notaInput.addEventListener("input", function () {
+        const valor = parseFloat(this.value);
+        if (valor < 0) this.value = 0;
+        if (valor > 5) this.value = 5;
+      });
+    }
+  });
+</script>
+{% endblock %}

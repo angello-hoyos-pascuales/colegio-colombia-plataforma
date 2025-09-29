@@ -1,0 +1,533 @@
+{% extends "base.html" %} {% block title %}Entregar Tarea: {{ tarea.nombre }}{%
+endblock %} {% block extra_css %}
+<style>
+  .entrega-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .form-card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+  }
+  .file-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .file-upload-area:hover,
+  .file-upload-area.dragover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+  }
+  .file-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .file-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: between;
+  }
+  .file-item .file-info {
+    flex: 1;
+  }
+  .file-item .file-size {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  .file-item .remove-file {
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: auto;
+  }
+  .file-item .remove-file:hover {
+    color: #c82333;
+  }
+  .urgente-alert {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+    border: none;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(238, 90, 82, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(238, 90, 82, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(238, 90, 82, 0);
+    }
+  }
+  .progress-container {
+    display: none;
+    margin-top: 1rem;
+  }
+  .info-sidebar {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+  }
+  .countdown-timer {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="entrega-header">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h2 class="mb-2">Entregar Tarea</h2>
+        <h4 class="mb-2 opacity-90">{{ tarea.nombre }}</h4>
+        <p class="mb-0 opacity-75">
+          <i class="fas fa-book me-2"></i>{{ tarea.asignatura.nombre }}
+          <span class="mx-3">|</span>
+          <i class="fas fa-user me-2"></i>{{
+          tarea.asignatura.profesor.nombre_completo }}
+        </p>
+      </div>
+      {% if tarea.fecha_vencimiento %}
+      <div class="text-end">
+        <small class="opacity-75 d-block">Fecha límite:</small>
+        <strong class="d-block"
+          >{{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }}</strong
+        >
+        {% set dias_restantes = (tarea.fecha_vencimiento.date() -
+        moment().date()).days %} {% if dias_restantes is not none %} {% if
+        dias_restantes > 0 %}
+        <small class="opacity-75">({{ dias_restantes }} días restantes)</small>
+        {% elif dias_restantes == 0 %}
+        <small class="text-warning">(¡Vence hoy!)</small>
+        {% endif %} {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('estudiante.dashboard') }}">Dashboard</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('estudiante.tareas') }}">Mis Tareas</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('estudiante.detalle_tarea', id=tarea.id) }}"
+          >{{ tarea.nombre }}</a
+        >
+      </li>
+      <li class="breadcrumb-item active">Entregar</li>
+    </ol>
+  </nav>
+
+  <!-- Alerta de urgencia -->
+  {% if tarea.fecha_vencimiento and (tarea.fecha_vencimiento.date() -
+  moment().date()).days <= 1 %}
+  <div class="alert urgente-alert text-white" role="alert">
+    <h5 class="alert-heading">
+      <i class="fas fa-exclamation-triangle me-2"></i>¡Tarea Urgente!
+    </h5>
+    <p class="mb-0">
+      Esta tarea vence muy pronto. Asegúrate de entregarla a tiempo.
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <!-- Formulario de entrega -->
+    <div class="col-lg-8">
+      <div class="form-card card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-upload me-2"></i>Formulario de Entrega
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data" id="entregaForm">
+            {{ form.hidden_tag() }}
+
+            <!-- Comentario -->
+            <div class="mb-4">
+              {{ form.comentario.label(class="form-label fw-bold") }} {{
+              form.comentario(class="form-control", rows="4",
+              placeholder="Escribe aquí cualquier comentario o aclaración sobre
+              tu entrega...") }} {% if form.comentario.errors %}
+              <div class="text-danger mt-1">
+                {% for error in form.comentario.errors %}
+                <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Área de carga de archivos -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                <i class="fas fa-paperclip me-2"></i>Archivos (Opcional)
+              </label>
+              <p class="text-muted small mb-2">
+                Puedes subir documentos, imágenes o cualquier archivo
+                relacionado con tu tarea. Formatos permitidos: PDF, DOC, DOCX,
+                TXT, JPG, PNG, etc. Máximo 10MB por archivo.
+              </p>
+
+              <div class="file-upload-area" id="fileUploadArea">
+                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
+                <p class="text-muted mb-2">
+                  Arrastra archivos aquí o haz clic para seleccionar
+                </p>
+                <input
+                  type="file"
+                  id="fileInput"
+                  multiple
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip,.rar"
+                  style="display: none"
+                />
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  onclick="document.getElementById('fileInput').click();"
+                >
+                  <i class="fas fa-folder-open me-2"></i>Seleccionar Archivos
+                </button>
+              </div>
+
+              <!-- Lista de archivos seleccionados -->
+              <div id="fileList" class="file-list mt-3" style="display: none">
+                <h6>Archivos seleccionados:</h6>
+                <div id="fileItems"></div>
+              </div>
+
+              <!-- Barra de progreso -->
+              <div class="progress-container">
+                <label class="form-label">Progreso de subida:</label>
+                <div class="progress">
+                  <div
+                    class="progress-bar"
+                    role="progressbar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-between">
+              <a
+                href="{{ url_for('estudiante.detalle_tarea', id=tarea.id) }}"
+                class="btn btn-outline-secondary"
+              >
+                <i class="fas fa-arrow-left me-2"></i>Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-paper-plane me-2"></i>Entregar Tarea
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel lateral de información -->
+    <div class="col-lg-4">
+      <!-- Countdown timer -->
+      {% if tarea.fecha_vencimiento %}
+      <div class="countdown-timer" id="countdownTimer">
+        <i class="fas fa-clock me-2"></i>
+        <div id="timeRemaining">Calculando...</div>
+      </div>
+      {% endif %}
+
+      <!-- Información de la tarea -->
+      <div class="info-sidebar">
+        <h6 class="mb-3">
+          <i class="fas fa-info-circle me-2"></i>Información de la Tarea
+        </h6>
+
+        {% if tarea.descripcion %}
+        <div class="mb-3">
+          <strong>Descripción:</strong>
+          <p class="small mb-0">
+            {{ tarea.descripcion[:200] }}{% if tarea.descripcion|length > 200
+            %}...{% endif %}
+          </p>
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <strong>Fecha de asignación:</strong>
+          <p class="mb-0">
+            {{ tarea.fecha_asignacion.strftime('%d/%m/%Y %H:%M') }}
+          </p>
+        </div>
+
+        {% if tarea.fecha_vencimiento %}
+        <div class="mb-3">
+          <strong>Fecha límite:</strong>
+          <p class="mb-0">
+            {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }}
+          </p>
+        </div>
+        {% endif %} {% if tarea.valor_puntos %}
+        <div class="mb-3">
+          <strong>Valor:</strong>
+          <p class="mb-0">{{ tarea.valor_puntos }} puntos</p>
+        </div>
+        {% endif %}
+
+        <!-- Archivos del profesor -->
+        {% if tarea.archivos %}
+        <div class="mb-3">
+          <strong>Archivos del profesor:</strong>
+          {% for archivo in tarea.archivos %}
+          <div
+            class="d-flex justify-content-between align-items-center border rounded p-2 mt-2"
+          >
+            <small>
+              <i class="fas fa-file me-1"></i>{{ archivo.nombre }}
+            </small>
+            <a
+              href="{{ url_for('static', filename='uploads/' + archivo.archivo) }}"
+              class="btn btn-sm btn-outline-primary"
+              download
+            >
+              <i class="fas fa-download"></i>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Consejos -->
+        <div class="alert alert-info">
+          <h6 class="alert-heading">💡 Consejos</h6>
+          <ul class="mb-0 small">
+            <li>Revisa tu trabajo antes de entregar</li>
+            <li>Asegúrate de que los archivos se hayan subido correctamente</li>
+            <li>Puedes agregar comentarios para explicar tu trabajo</li>
+            <li>Una vez entregada, no podrás modificar la entrega</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar Entrega</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que quieres entregar esta tarea?</p>
+        <p class="text-warning">
+          <strong>Nota:</strong> Una vez entregada, no podrás realizar
+          modificaciones.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" id="confirmSubmit">
+          Sí, Entregar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const fileInput = document.getElementById('fileInput');
+      const fileUploadArea = document.getElementById('fileUploadArea');
+      const fileList = document.getElementById('fileList');
+      const fileItems = document.getElementById('fileItems');
+      const form = document.getElementById('entregaForm');
+      const submitBtn = document.getElementById('submitBtn');
+      const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+      let selectedFiles = [];
+
+      // Drag and drop functionality
+      fileUploadArea.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          fileUploadArea.classList.add('dragover');
+      });
+
+      fileUploadArea.addEventListener('dragleave', function(e) {
+          e.preventDefault();
+          fileUploadArea.classList.remove('dragover');
+      });
+
+      fileUploadArea.addEventListener('drop', function(e) {
+          e.preventDefault();
+          fileUploadArea.classList.remove('dragover');
+          const files = e.dataTransfer.files;
+          addFiles(files);
+      });
+
+      fileUploadArea.addEventListener('click', function() {
+          fileInput.click();
+      });
+
+      fileInput.addEventListener('change', function() {
+          addFiles(this.files);
+      });
+
+      function addFiles(files) {
+          for (let file of files) {
+              // Validar tamaño (10MB)
+              if (file.size > 10 * 1024 * 1024) {
+                  alert(`El archivo "${file.name}" es demasiado grande. Máximo 10MB.`);
+                  continue;
+              }
+
+              // Evitar duplicados
+              if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                  continue;
+              }
+
+              selectedFiles.push(file);
+          }
+          updateFileList();
+      }
+
+      function updateFileList() {
+          if (selectedFiles.length === 0) {
+              fileList.style.display = 'none';
+              return;
+          }
+
+          fileList.style.display = 'block';
+          fileItems.innerHTML = '';
+
+          selectedFiles.forEach((file, index) => {
+              const fileItem = document.createElement('div');
+              fileItem.className = 'file-item';
+              fileItem.innerHTML = `
+                  <div class="file-info">
+                      <i class="fas fa-file me-2"></i>
+                      <strong>${file.name}</strong>
+                      <div class="file-size">${formatFileSize(file.size)}</div>
+                  </div>
+                  <i class="fas fa-times remove-file" onclick="removeFile(${index})"></i>
+              `;
+              fileItems.appendChild(fileItem);
+          });
+      }
+
+      window.removeFile = function(index) {
+          selectedFiles.splice(index, 1);
+          updateFileList();
+      };
+
+      function formatFileSize(bytes) {
+          if (bytes === 0) return '0 Bytes';
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+
+      // Countdown timer
+      const countdownElement = document.getElementById('timeRemaining');
+      {% if tarea.fecha_vencimiento %}
+      const deadline = new Date('{{ tarea.fecha_vencimiento.isoformat() }}');
+
+      function updateCountdown() {
+          const now = new Date();
+          const timeDiff = deadline - now;
+
+          if (timeDiff <= 0) {
+              countdownElement.innerHTML = '¡Tiempo agotado!';
+              document.getElementById('countdownTimer').style.background = 'linear-gradient(45deg, #dc3545, #c82333)';
+              return;
+          }
+
+          const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+          countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m`;
+      }
+
+      updateCountdown();
+      setInterval(updateCountdown, 60000);
+      {% endif %}
+
+      // Form submission with confirmation
+      form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          confirmModal.show();
+      });
+
+      document.getElementById('confirmSubmit').addEventListener('click', function() {
+          confirmModal.hide();
+
+          // Create FormData with files
+          const formData = new FormData(form);
+
+          // Add selected files
+          selectedFiles.forEach(file => {
+              formData.append('archivos', file);
+          });
+
+          // Submit form
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Entregando...';
+
+          fetch(form.action, {
+              method: 'POST',
+              body: formData
+          })
+          .then(response => {
+              if (response.ok) {
+                  window.location.href = "{{ url_for('estudiante.detalle_tarea', id=tarea.id) }}";
+              } else {
+                  throw new Error('Error en la entrega');
+              }
+          })
+          .catch(error => {
+              alert('Error al entregar la tarea. Por favor, inténtalo de nuevo.');
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Entregar Tarea';
+          });
+      });
+  });
+</script>
+{% endblock %}

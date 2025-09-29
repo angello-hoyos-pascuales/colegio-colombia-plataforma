@@ -1,0 +1,178 @@
+{% extends "base.html" %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="hero-section text-center py-5">
+      <h1 class="display-4 text-primary">
+        <i class="fas fa-graduation-cap me-3"></i>
+        Bienvenido al {{ config.COLEGIO_NOMBRE }}
+      </h1>
+      <p class="lead text-muted">Plataforma Estudiantil Web</p>
+
+      {% if not current_user.is_authenticated %}
+      <div class="mt-4">
+        <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+        </a>
+      </div>
+      {% else %}
+      <div class="mt-4">
+        <div class="row text-center">
+          {% if current_user.es_admin %}
+          <div class="col-md-4">
+            <div class="card border-primary">
+              <div class="card-body">
+                <i class="fas fa-cog fa-3x text-primary mb-3"></i>
+                <h5>Administración</h5>
+                <p class="text-muted">Gestión completa del sistema</p>
+                <a
+                  href="{{ url_for('admin.dashboard') }}"
+                  class="btn btn-outline-primary"
+                >
+                  Acceder
+                </a>
+              </div>
+            </div>
+          </div>
+          {% elif current_user.es_profesor %}
+          <div class="col-md-4">
+            <div class="card border-success">
+              <div class="card-body">
+                <i
+                  class="fas fa-chalkboard-teacher fa-3x text-success mb-3"
+                ></i>
+                <h5>Portal Docente</h5>
+                <p class="text-muted">Gestión de clases y tareas</p>
+                <a
+                  href="{{ url_for('profesor.dashboard') }}"
+                  class="btn btn-outline-success"
+                >
+                  Acceder
+                </a>
+              </div>
+            </div>
+          </div>
+          {% elif current_user.es_estudiante %}
+          <div class="col-md-4">
+            <div class="card border-info">
+              <div class="card-body">
+                <i class="fas fa-user-graduate fa-3x text-info mb-3"></i>
+                <h5>Portal Estudiantil</h5>
+                <p class="text-muted">Tareas y calificaciones</p>
+                <a
+                  href="{{ url_for('estudiante.dashboard') }}"
+                  class="btn btn-outline-info"
+                >
+                  Acceder
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="col-md-4">
+            <div class="card border-warning">
+              <div class="card-body">
+                <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                <h5>Horarios</h5>
+                <p class="text-muted">Consulta de horarios</p>
+                {% if current_user.es_estudiante %}
+                <a
+                  href="{{ url_for('estudiante.horario') }}"
+                  class="btn btn-outline-warning"
+                >
+                  Ver Horario
+                </a>
+                {% else %}
+                <a
+                  href="{{ url_for('horario.tiempo_real') }}"
+                  class="btn btn-outline-warning"
+                >
+                  Tiempo Real
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card border-secondary">
+              <div class="card-body">
+                <i class="fas fa-bell fa-3x text-secondary mb-3"></i>
+                <h5>Notificaciones</h5>
+                <p class="text-muted">Alertas y avisos</p>
+                {% if current_user.es_profesor %}
+                <a
+                  href="{{ url_for('profesor.notificaciones') }}"
+                  class="btn btn-outline-secondary"
+                >
+                  Ver Alertas
+                </a>
+                {% else %}
+                <button class="btn btn-outline-secondary" disabled>
+                  Sin notificaciones
+                </button>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="row mt-5">
+      <div class="col-12">
+        <h3 class="text-center mb-4">Información del Sistema</h3>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5><i class="fas fa-info-circle me-2"></i>Características</h5>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled">
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Gestión de
+                usuarios por rol
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Cursos de 6º a 11º
+                grado
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Sistema de tareas
+                y calificaciones
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Horarios en tiempo
+                real
+              </li>
+              <li>
+                <i class="fas fa-check text-success me-2"></i>Notificaciones
+                automáticas
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5><i class="fas fa-clock me-2"></i>Horarios de Clase</h5>
+          </div>
+          <div class="card-body">
+            <small class="text-muted">
+              {% for inicio, fin in config.HORAS_CLASES %}
+              <div>{{ inicio }} - {{ fin }}</div>
+              {% endfor %}
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

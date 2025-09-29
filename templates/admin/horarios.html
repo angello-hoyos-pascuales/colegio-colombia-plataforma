@@ -1,0 +1,464 @@
+{% extends "base.html" %} {% block title %}Gestión de Horarios - Administrador{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="fas fa-calendar-alt text-primary me-2"></i>
+      Gestión de Horarios
+    </h1>
+    <div>
+      <a
+        href="{{ url_for('admin.dashboard') }}"
+        class="btn btn-outline-secondary"
+      >
+        <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Panel de Control de Tiempo Real -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-primary">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-broadcast-tower me-2"></i>
+            Sistema de Horarios en Tiempo Real
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="text-center">
+                <h3 class="text-success mb-1">
+                  {{ horarios|selectattr("activo", "equalto", True)|list|length
+                  }}
+                </h3>
+                <small class="text-muted">Horarios Activos</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <h3 class="text-warning mb-1" id="ausencias-hoy">0</h3>
+                <small class="text-muted">Ausencias Hoy</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <h3 class="text-info mb-1" id="reemplazos-activos">0</h3>
+                <small class="text-muted">Reemplazos Activos</small>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <button class="btn btn-warning" onclick="reportarAusencia()">
+                  <i class="fas fa-exclamation-triangle me-1"></i>
+                  Reportar Ausencia
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Horario Actual del Día -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-clock me-2"></i>
+            Horario de Hoy - <span id="fecha-actual"></span>
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered text-center">
+              <thead class="table-primary">
+                <tr>
+                  <th width="10%">Hora</th>
+                  <th width="18%">6° A</th>
+                  <th width="18%">6° B</th>
+                  <th width="18%">7° A</th>
+                  <th width="18%">7° B</th>
+                  <th width="18%">... otros cursos</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="table-secondary"><strong>7:00-8:00</strong></td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="7:00" data-curso="6A">
+                      <small class="text-primary">Matemáticas</small><br />
+                      <small class="text-muted">Prof. González</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="7:00" data-curso="6B">
+                      <small class="text-success">Español</small><br />
+                      <small class="text-muted">Prof. Rodríguez</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="7:00" data-curso="7A">
+                      <small class="text-info">Ciencias</small><br />
+                      <small class="text-muted">Prof. Martínez</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="7:00" data-curso="7B">
+                      <small class="text-warning">Sociales</small><br />
+                      <small class="text-muted">Prof. López</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <small class="text-muted">...</small>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="table-secondary"><strong>8:00-9:00</strong></td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="8:00" data-curso="6A">
+                      <small class="text-success">Español</small><br />
+                      <small class="text-muted">Prof. Rodríguez</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="8:00" data-curso="6B">
+                      <small class="text-primary">Matemáticas</small><br />
+                      <small class="text-muted">Prof. González</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="8:00" data-curso="7A">
+                      <small class="text-warning">Sociales</small><br />
+                      <small class="text-muted">Prof. López</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="8:00" data-curso="7B">
+                      <small class="text-info">Ciencias</small><br />
+                      <small class="text-muted">Prof. Martínez</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <small class="text-muted">...</small>
+                  </td>
+                </tr>
+                <!-- Más filas de horarios -->
+                <tr>
+                  <td class="table-warning"><strong>10:00-10:30</strong></td>
+                  <td colspan="5" class="table-warning text-center">
+                    <i class="fas fa-coffee me-1"></i><strong>DESCANSO</strong>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="table-secondary"><strong>10:30-11:30</strong></td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="10:30" data-curso="6A">
+                      <small class="text-info">Ciencias</small><br />
+                      <small class="text-muted">Prof. Martínez</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="10:30" data-curso="6B">
+                      <small class="text-warning">Sociales</small><br />
+                      <small class="text-muted">Prof. López</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="10:30" data-curso="7A">
+                      <small class="text-primary">Matemáticas</small><br />
+                      <small class="text-muted">Prof. González</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <div class="horario-slot" data-hora="10:30" data-curso="7B">
+                      <small class="text-success">Español</small><br />
+                      <small class="text-muted">Prof. Rodríguez</small>
+                    </div>
+                  </td>
+                  <td class="bg-light">
+                    <small class="text-muted">...</small>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificaciones de Ausencias y Reemplazos -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header bg-warning text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Ausencias del Día
+          </h6>
+        </div>
+        <div class="card-body">
+          <div id="ausencias-list">
+            <div class="text-center text-muted py-3">
+              <i class="fas fa-check-circle fa-2x mb-2"></i>
+              <p>No hay ausencias reportadas hoy</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-user-plus me-2"></i>
+            Reemplazos Activos
+          </h6>
+        </div>
+        <div class="card-body">
+          <div id="reemplazos-list">
+            <div class="text-center text-muted py-3">
+              <i class="fas fa-user-check fa-2x mb-2"></i>
+              <p>No hay reemplazos activos</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Horarios por Curso -->
+  {% if horarios %}
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Todos los Horarios Programados</h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Día</th>
+              <th>Hora</th>
+              <th>Curso</th>
+              <th>Asignatura</th>
+              <th>Profesor</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for horario in horarios %}
+            <tr>
+              <td>
+                <span class="badge bg-primary">{{ horario.dia }}</span>
+              </td>
+              <td>
+                <small
+                  >{{ horario.hora_inicio }} - {{ horario.hora_fin }}</small
+                >
+              </td>
+              <td>
+                <span class="badge bg-info"
+                  >{{ horario.asignatura.curso.nombre }}</span
+                >
+              </td>
+              <td>
+                <strong>{{ horario.asignatura.nombre }}</strong>
+              </td>
+              <td>
+                {% if horario.asignatura.profesor %}
+                <small
+                  >{{ horario.asignatura.profesor.nombre }} {{
+                  horario.asignatura.profesor.apellido }}</small
+                >
+                {% else %}
+                <span class="text-muted">Sin profesor</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if horario.activo %}
+                <span class="badge bg-success">Activo</span>
+                {% else %}
+                <span class="badge bg-warning">Inactivo</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button
+                    class="btn btn-outline-warning"
+                    onclick="reportarAusenciaHorario({{ horario.id }})"
+                    title="Reportar ausencia"
+                  >
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </button>
+                  <button
+                    class="btn btn-outline-info"
+                    onclick="buscarReemplazo({{ horario.id }})"
+                    title="Buscar reemplazo"
+                  >
+                    <i class="fas fa-user-plus"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Modal para Reportar Ausencia -->
+<div class="modal fade" id="reportarAusenciaModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Reportar Ausencia
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="formReportarAusencia">
+          <div class="mb-3">
+            <label class="form-label">Profesor</label>
+            <select class="form-select" name="profesor_id" required>
+              <option value="">Seleccionar profesor...</option>
+              <!-- Se llenará dinámicamente -->
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Motivo</label>
+            <textarea
+              class="form-control"
+              name="motivo"
+              rows="3"
+              placeholder="Describe el motivo de la ausencia..."
+            ></textarea>
+          </div>
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="buscar_reemplazo"
+              id="buscarReemplazo"
+              checked
+            />
+            <label class="form-check-label" for="buscarReemplazo">
+              Buscar reemplazo automáticamente
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-warning"
+          onclick="confirmarAusencia()"
+        >
+          <i class="fas fa-exclamation-triangle me-1"></i>Reportar Ausencia
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Actualizar fecha actual
+  document.getElementById("fecha-actual").textContent =
+    new Date().toLocaleDateString("es-CO", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+  // Función para reportar ausencia
+  function reportarAusencia() {
+    new bootstrap.Modal(
+      document.getElementById("reportarAusenciaModal")
+    ).show();
+  }
+
+  // Función para reportar ausencia de un horario específico
+  function reportarAusenciaHorario(horarioId) {
+    // Implementar lógica específica para horario
+    console.log("Reportar ausencia para horario:", horarioId);
+  }
+
+  // Función para buscar reemplazo
+  function buscarReemplazo(horarioId) {
+    // Implementar lógica de búsqueda de reemplazo
+    console.log("Buscar reemplazo para horario:", horarioId);
+  }
+
+  // Confirmar ausencia
+  function confirmarAusencia() {
+    const form = document.getElementById("formReportarAusencia");
+    const formData = new FormData(form);
+
+    // Enviar datos al servidor
+    fetch("/admin/reportar_ausencia", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert("Error al reportar ausencia: " + data.message);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Error al reportar ausencia");
+      });
+
+    bootstrap.Modal.getInstance(
+      document.getElementById("reportarAusenciaModal")
+    ).hide();
+  }
+
+  // Actualizar estadísticas en tiempo real (simulado)
+  setInterval(function () {
+    // Aquí se implementaría la actualización en tiempo real
+    // Por ahora es solo para demostración
+  }, 30000);
+</script>
+
+<style>
+  .horario-slot {
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 5px;
+    border-radius: 3px;
+  }
+
+  .horario-slot:hover {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+  }
+
+  .table-bordered th,
+  .table-bordered td {
+    vertical-align: middle;
+  }
+</style>
+{% endblock %}

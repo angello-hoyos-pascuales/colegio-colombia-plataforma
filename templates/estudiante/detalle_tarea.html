@@ -1,0 +1,419 @@
+{% extends "base.html" %} {% block title %}{{ tarea.nombre }} - Detalle Tarea{%
+endblock %} {% block extra_css %}
+<style>
+  .tarea-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .info-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    transition: transform 0.2s ease-in-out;
+  }
+  .info-card:hover {
+    transform: translateY(-2px);
+  }
+  .estado-badge {
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+  }
+  .pendiente {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+  }
+  .entregada {
+    background: linear-gradient(45deg, #28a745, #20c997);
+  }
+  .vencida {
+    background: linear-gradient(45deg, #dc3545, #e83e8c);
+  }
+  .archivo-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s ease;
+  }
+  .archivo-item:hover {
+    background: #e9ecef;
+  }
+  .timeline-item {
+    border-left: 3px solid #007bff;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #007bff;
+  }
+  .urgente-alert {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+    border: none;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(238, 90, 82, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(238, 90, 82, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(238, 90, 82, 0);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header de la tarea -->
+  <div class="tarea-header">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h2 class="mb-2">{{ tarea.nombre }}</h2>
+        <p class="mb-1 opacity-75">
+          <i class="fas fa-book me-2"></i>{{ tarea.asignatura.nombre }}
+          <span class="mx-3">|</span>
+          <i class="fas fa-user me-2"></i>{{
+          tarea.asignatura.profesor.nombre_completo }}
+        </p>
+        <p class="mb-0 opacity-75">
+          <i class="fas fa-calendar me-2"></i>Creada: {{
+          tarea.fecha_asignacion.strftime('%d/%m/%Y %H:%M') }}
+        </p>
+      </div>
+      <div class="text-end">
+        {% if entrega %}
+        <span class="estado-badge text-white entregada mb-2 d-block">
+          <i class="fas fa-check me-1"></i>Entregada
+        </span>
+        {% elif tarea.fecha_vencimiento and tarea.fecha_vencimiento < moment()
+        %}
+        <span class="estado-badge text-white vencida mb-2 d-block">
+          <i class="fas fa-times me-1"></i>Vencida
+        </span>
+        {% else %}
+        <span class="estado-badge text-white pendiente mb-2 d-block">
+          <i class="fas fa-clock me-1"></i>Pendiente
+        </span>
+        {% endif %} {% if tarea.fecha_vencimiento %}
+        <small class="opacity-75 d-block">
+          Vence: {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }}
+        </small>
+        {% set dias_restantes = (tarea.fecha_vencimiento.date() -
+        moment().date()).days %} {% if dias_restantes is not none %} {% if
+        dias_restantes > 0 %}
+        <small class="opacity-75 d-block"
+          >({{ dias_restantes }} días restantes)</small
+        >
+        {% elif dias_restantes == 0 %}
+        <small class="text-warning d-block">(¡Vence hoy!)</small>
+        {% else %}
+        <small class="text-danger d-block"
+          >(Vencida hace {{ -dias_restantes }} días)</small
+        >
+        {% endif %} {% endif %} {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('estudiante.dashboard') }}">Dashboard</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('estudiante.tareas') }}">Mis Tareas</a>
+      </li>
+      <li class="breadcrumb-item active">{{ tarea.nombre }}</li>
+    </ol>
+  </nav>
+
+  <!-- Alerta de urgencia -->
+  {% if tarea.fecha_vencimiento and (tarea.fecha_vencimiento.date() -
+  moment().date()).days <= 1 and not entrega %}
+  <div class="alert urgente-alert text-white" role="alert">
+    <h5 class="alert-heading">
+      <i class="fas fa-exclamation-triangle me-2"></i>¡Tarea Urgente!
+    </h5>
+    <p class="mb-0">
+      Esta tarea está próxima a vencer. Te recomendamos entregarla lo antes
+      posible.
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <!-- Información principal -->
+    <div class="col-lg-8">
+      <!-- Descripción -->
+      <div class="info-card card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Descripción
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if tarea.descripcion %}
+          <p class="mb-0">{{ tarea.descripcion|nl2br }}</p>
+          {% else %}
+          <p class="text-muted mb-0">
+            No hay descripción disponible para esta tarea.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Archivos adjuntos del profesor -->
+      {% if tarea.archivos %}
+      <div class="info-card card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-paperclip me-2"></i>Archivos del Profesor
+          </h5>
+        </div>
+        <div class="card-body">
+          {% for archivo in tarea.archivos %}
+          <div
+            class="archivo-item d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <i class="fas fa-file me-2"></i>
+              <strong>{{ archivo.nombre }}</strong>
+              {% if archivo.tamaño %}
+              <small class="text-muted"
+                >({{ archivo.tamaño|filesizeformat }})</small
+              >
+              {% endif %}
+            </div>
+            <a
+              href="{{ url_for('static', filename='uploads/' + archivo.archivo) }}"
+              class="btn btn-sm btn-outline-primary"
+              download
+            >
+              <i class="fas fa-download"></i>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Mi entrega -->
+      {% if entrega %}
+      <div class="info-card card mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-check-circle me-2"></i>Mi Entrega
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <strong>Fecha de entrega:</strong>
+              <p class="mb-2">
+                {{ entrega.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}
+              </p>
+            </div>
+            <div class="col-md-6">
+              <strong>Estado:</strong>
+              <p class="mb-2">
+                {% if entrega.calificacion %}
+                <span class="badge bg-info">Calificada</span>
+                {% else %}
+                <span class="badge bg-warning">Pendiente de calificar</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          {% if entrega.comentario %}
+          <div class="mb-3">
+            <strong>Mi comentario:</strong>
+            <p class="mb-0">{{ entrega.comentario|nl2br }}</p>
+          </div>
+          {% endif %} {% if entrega.archivos %}
+          <div class="mb-3">
+            <strong>Archivos entregados:</strong>
+            {% for archivo in entrega.archivos %}
+            <div
+              class="archivo-item d-flex justify-content-between align-items-center"
+            >
+              <div>
+                <i class="fas fa-file me-2"></i>{{ archivo.nombre }} {% if
+                archivo.tamaño %}
+                <small class="text-muted"
+                  >({{ archivo.tamaño|filesizeformat }})</small
+                >
+                {% endif %}
+              </div>
+              <a
+                href="{{ url_for('static', filename='uploads/' + archivo.archivo) }}"
+                class="btn btn-sm btn-outline-primary"
+                download
+              >
+                <i class="fas fa-download"></i>
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Calificación -->
+          {% if entrega.calificacion %}
+          <div class="alert alert-info">
+            <h6 class="alert-heading">Calificación</h6>
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Nota:</strong> {{ "%.1f"|format(entrega.calificacion)
+                }}/5.0
+              </div>
+              <div class="col-md-6">
+                <strong>Fecha:</strong> {{
+                entrega.fecha_calificacion.strftime('%d/%m/%Y %H:%M') if
+                entrega.fecha_calificacion else 'N/A' }}
+              </div>
+            </div>
+            {% if entrega.comentario_profesor %}
+            <hr />
+            <strong>Comentario del profesor:</strong>
+            <p class="mb-0">{{ entrega.comentario_profesor|nl2br }}</p>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-lg-4">
+      <!-- Información general -->
+      <div class="info-card card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-info me-2"></i>Información General
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <strong>Asignatura:</strong>
+            <p class="mb-1">{{ tarea.asignatura.nombre }}</p>
+          </div>
+          <div class="mb-3">
+            <strong>Profesor:</strong>
+            <p class="mb-1">{{ tarea.asignatura.profesor.nombre_completo }}</p>
+          </div>
+          <div class="mb-3">
+            <strong>Fecha de asignación:</strong>
+            <p class="mb-1">
+              {{ tarea.fecha_asignacion.strftime('%d/%m/%Y %H:%M') }}
+            </p>
+          </div>
+          {% if tarea.fecha_vencimiento %}
+          <div class="mb-3">
+            <strong>Fecha límite:</strong>
+            <p
+              class="mb-1 {% if (tarea.fecha_vencimiento.date() - moment().date()).days <= 1 %}text-danger fw-bold{% endif %}"
+            >
+              {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }}
+            </p>
+          </div>
+          {% endif %} {% if tarea.valor_puntos %}
+          <div class="mb-3">
+            <strong>Valor:</strong>
+            <p class="mb-1">{{ tarea.valor_puntos }} puntos</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="info-card card mb-4">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>Acciones</h6>
+        </div>
+        <div class="card-body">
+          {% if not entrega and (not tarea.fecha_vencimiento or
+          tarea.fecha_vencimiento > moment()) %}
+          <a
+            href="{{ url_for('estudiante.entregar_tarea', id=tarea.id) }}"
+            class="btn btn-primary w-100 mb-2"
+          >
+            <i class="fas fa-upload me-2"></i>Entregar Tarea
+          </a>
+          {% endif %}
+
+          <a
+            href="{{ url_for('estudiante.tareas') }}"
+            class="btn btn-outline-secondary w-100"
+          >
+            <i class="fas fa-arrow-left me-2"></i>Volver a Tareas
+          </a>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="info-card card">
+        <div class="card-header">
+          <h6 class="mb-0"><i class="fas fa-history me-2"></i>Historial</h6>
+        </div>
+        <div class="card-body">
+          <div class="timeline-item">
+            <small class="text-muted"
+              >{{ tarea.fecha_asignacion.strftime('%d/%m/%Y %H:%M') }}</small
+            >
+            <p class="mb-0">Tarea asignada</p>
+          </div>
+          {% if entrega %}
+          <div class="timeline-item">
+            <small class="text-muted"
+              >{{ entrega.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}</small
+            >
+            <p class="mb-0">Tarea entregada</p>
+          </div>
+          {% if entrega.calificacion %}
+          <div class="timeline-item">
+            <small class="text-muted"
+              >{{ entrega.fecha_calificacion.strftime('%d/%m/%Y %H:%M') if
+              entrega.fecha_calificacion else 'N/A' }}</small
+            >
+            <p class="mb-0">
+              Tarea calificada ({{ "%.1f"|format(entrega.calificacion) }}/5.0)
+            </p>
+          </div>
+          {% endif %} {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Animación de entrada para las tarjetas
+    const cards = document.querySelectorAll(".info-card");
+    cards.forEach((card, index) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(20px)";
+      setTimeout(() => {
+        card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+        card.style.opacity = "1";
+        card.style.transform = "translateY(0)";
+      }, index * 100);
+    });
+  });
+</script>
+{% endblock %}

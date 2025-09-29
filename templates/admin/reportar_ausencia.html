@@ -1,0 +1,224 @@
+{% extends "base.html" %} {% block title %}Reportar Ausencia de Profesor -
+Administrador{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div
+    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+  >
+    <h1 class="h2">⚠️ Reportar Ausencia de Profesor</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2">
+        <a
+          href="{{ url_for('admin.dashboard') }}"
+          class="btn btn-sm btn-outline-secondary"
+        >
+          <i class="fas fa-arrow-left"></i> Volver al Panel
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle"></i>
+            Reportar Ausencia de Profesor
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-4">
+            <i class="fas fa-info-circle"></i>
+            Complete este formulario para reportar la ausencia de un profesor.
+            El sistema automáticamente buscará profesores de reemplazo
+            disponibles para las clases afectadas.
+          </p>
+
+          <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  {{ form.profesor_id.label(class="form-label") }}
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-user-tie"></i>
+                    </span>
+                    {{ form.profesor_id(class="form-select") }}
+                  </div>
+                  {% if form.profesor_id.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.profesor_id.errors %} {{ error }} {%
+                    endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3">
+                  {{ form.fecha_ausencia.label(class="form-label") }}
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-calendar-alt"></i>
+                    </span>
+                    {{ form.fecha_ausencia(class="form-control") }}
+                  </div>
+                  {% if form.fecha_ausencia.errors %}
+                  <div class="invalid-feedback d-block">
+                    {% for error in form.fecha_ausencia.errors %} {{ error }} {%
+                    endfor %}
+                  </div>
+                  {% endif %}
+                  <small class="form-text text-muted">
+                    Solo días laborables (lunes a viernes)
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              {{ form.motivo.label(class="form-label") }}
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-clipboard-list"></i>
+                </span>
+                {{ form.motivo(class="form-control", rows="3",
+                placeholder="Motivo de la ausencia (opcional)...") }}
+              </div>
+              {% if form.motivo.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.motivo.errors %} {{ error }} {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn btn-outline-secondary me-md-2"
+              >
+                <i class="fas fa-times"></i> Cancelar
+              </a>
+              {{ form.submit(class="btn btn-warning") }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información adicional -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="card border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-lightbulb"></i>
+            ¿Cómo funciona el sistema de reemplazos?
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="d-flex align-items-start mb-3">
+                <div
+                  class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                  style="width: 40px; height: 40px; min-width: 40px"
+                >
+                  <span class="fw-bold">1</span>
+                </div>
+                <div>
+                  <h6 class="fw-bold text-primary">Identificación</h6>
+                  <p class="text-muted mb-0 small">
+                    El sistema identifica automáticamente todas las clases
+                    programadas del profesor ausente para el día seleccionado.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="d-flex align-items-start mb-3">
+                <div
+                  class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-3"
+                  style="width: 40px; height: 40px; min-width: 40px"
+                >
+                  <span class="fw-bold">2</span>
+                </div>
+                <div>
+                  <h6 class="fw-bold text-warning">Búsqueda</h6>
+                  <p class="text-muted mb-0 small">
+                    Busca profesores disponibles que puedan enseñar las mismas
+                    materias y estén libres en esos horarios.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="d-flex align-items-start mb-3">
+                <div
+                  class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                  style="width: 40px; height: 40px; min-width: 40px"
+                >
+                  <span class="fw-bold">3</span>
+                </div>
+                <div>
+                  <h6 class="fw-bold text-success">Asignación</h6>
+                  <p class="text-muted mb-0 small">
+                    Permite seleccionar y confirmar los reemplazos más adecuados
+                    para cada clase afectada.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Validación del lado del cliente
+  document.addEventListener("DOMContentLoaded", function () {
+    const fechaInput = document.getElementById("fecha_ausencia");
+    const profesorSelect = document.getElementById("profesor_id");
+    const form = document.querySelector("form");
+
+    // Validar que la fecha no sea fin de semana
+    if (fechaInput) {
+      fechaInput.addEventListener("change", function () {
+        const fecha = new Date(this.value);
+        const diaSemana = fecha.getDay(); // 0=Domingo, 6=Sábado
+
+        if (diaSemana === 0 || diaSemana === 6) {
+          alert(
+            "No se pueden reportar ausencias para fines de semana. Por favor seleccione un día laborable."
+          );
+          this.value = "";
+        }
+      });
+    }
+
+    // Confirmación antes de enviar
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        const profesor =
+          profesorSelect.options[profesorSelect.selectedIndex].text;
+        const fecha = fechaInput.value;
+
+        if (
+          !confirm(
+            `¿Confirma que desea reportar la ausencia del profesor ${profesor} para el día ${fecha}?`
+          )
+        ) {
+          e.preventDefault();
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

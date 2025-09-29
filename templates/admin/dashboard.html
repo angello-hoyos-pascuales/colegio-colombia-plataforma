@@ -1,0 +1,489 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <!-- Header del Dashboard -->
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2>
+          <i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard
+          Administrativo
+        </h2>
+        <p class="text-muted">Panel de control y gestión del sistema</p>
+      </div>
+      <div class="text-end">
+        <small class="text-muted">
+          <i class="fas fa-clock me-1"></i>
+          Sistema Activo - {{ current_user.nombre_completo }}
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Módulos de Gestión -->
+  <div class="col-12">
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <h4 class="mb-3">
+          <i class="fas fa-cogs text-primary me-2"></i>Módulos de Gestión
+        </h4>
+      </div>
+
+      <!-- Gestión de Usuarios -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-primary rounded p-2 me-3">
+                <i class="fas fa-users fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Gestión de Usuarios</h5>
+                <small class="text-muted"
+                  >Administrar usuarios del sistema</small
+                >
+              </div>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('admin.usuarios') }}"
+                class="btn btn-primary btn-sm me-2"
+              >
+                <i class="fas fa-list me-1"></i>Ver Usuarios
+              </a>
+              <a
+                href="{{ url_for('admin.nuevo_usuario') }}"
+                class="btn btn-outline-primary btn-sm"
+              >
+                <i class="fas fa-plus me-1"></i>Nuevo Usuario
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gestión de Cursos -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-success rounded p-2 me-3">
+                <i class="fas fa-school fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Gestión de Cursos</h5>
+                <small class="text-muted">Administrar cursos y grados</small>
+              </div>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('admin.cursos') }}"
+                class="btn btn-success btn-sm me-2"
+              >
+                <i class="fas fa-list me-1"></i>Ver Cursos
+              </a>
+              <a
+                href="{{ url_for('admin.nuevo_curso') }}"
+                class="btn btn-outline-success btn-sm"
+              >
+                <i class="fas fa-plus me-1"></i>Nuevo Curso
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gestión de Asignaturas -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-info rounded p-2 me-3">
+                <i class="fas fa-book fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Asignaturas</h5>
+                <small class="text-muted"
+                  >Gestionar materias y asignaciones</small
+                >
+              </div>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('admin.asignaturas') }}"
+                class="btn btn-info btn-sm me-2"
+              >
+                <i class="fas fa-list me-1"></i>Ver Asignaturas
+              </a>
+              <a
+                href="{{ url_for('admin.nueva_asignatura') }}"
+                class="btn btn-outline-info btn-sm"
+              >
+                <i class="fas fa-plus me-1"></i>Nueva Asignatura
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horarios y Reemplazos -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-warning rounded p-2 me-3">
+                <i class="fas fa-clock fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Horarios</h5>
+                <small class="text-muted"
+                  >Sistema de horarios y reemplazos</small
+                >
+              </div>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('admin.horarios') }}"
+                class="btn btn-warning btn-sm me-2"
+              >
+                <i class="fas fa-calendar me-1"></i>Ver Horarios
+              </a>
+              <a
+                href="{{ url_for('admin.reportar_ausencia') }}"
+                class="btn btn-outline-warning btn-sm"
+              >
+                <i class="fas fa-exclamation-triangle me-1"></i>Reportar
+                Ausencia
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reportes y Estadísticas -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-secondary rounded p-2 me-3">
+                <i class="fas fa-chart-bar fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Reportes</h5>
+                <small class="text-muted">Estadísticas y análisis</small>
+              </div>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn btn-secondary btn-sm me-2"
+              >
+                <i class="fas fa-chart-line me-1"></i>Ver Reportes
+              </a>
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn btn-outline-secondary btn-sm"
+              >
+                <i class="fas fa-analytics me-1"></i>Estadísticas
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configuración del Sistema -->
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-dark rounded p-2 me-3">
+                <i class="fas fa-cog fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Configuración</h5>
+                <small class="text-muted">Ajustes del sistema</small>
+              </div>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn btn-dark btn-sm me-2"
+              >
+                <i class="fas fa-cogs me-1"></i>Configurar
+              </a>
+              <a
+                href="{{ url_for('admin.dashboard') }}"
+                class="btn btn-outline-dark btn-sm"
+              >
+                <i class="fas fa-download me-1"></i>Backup
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas principales -->
+  <div class="col-12">
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <h4 class="mb-3">
+          <i class="fas fa-chart-pie text-success me-2"></i>Estadísticas del
+          Sistema
+        </h4>
+      </div>
+      <div class="col-md-3">
+        <div class="dashboard-card">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-primary me-3">
+              {{ total_estudiantes }}
+            </div>
+            <div>
+              <div class="stat-label">Estudiantes</div>
+              <small class="text-muted">Activos en el sistema</small>
+            </div>
+            <div class="ms-auto">
+              <i class="fas fa-user-graduate fa-2x text-primary opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="dashboard-card success">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-success me-3">
+              {{ total_profesores }}
+            </div>
+            <div>
+              <div class="stat-label">Profesores</div>
+              <small class="text-muted">Activos en el sistema</small>
+            </div>
+            <div class="ms-auto">
+              <i
+                class="fas fa-chalkboard-teacher fa-2x text-success opacity-25"
+              ></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="dashboard-card info">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-info me-3">{{ total_cursos }}</div>
+            <div>
+              <div class="stat-label">Cursos</div>
+              <small class="text-muted">Grados 6° - 11°</small>
+            </div>
+            <div class="ms-auto">
+              <i class="fas fa-book fa-2x text-info opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="dashboard-card warning">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-warning me-3">{{ total_tareas }}</div>
+            <div>
+              <div class="stat-label">Tareas</div>
+              <small class="text-muted">Activas en el sistema</small>
+            </div>
+            <div class="ms-auto">
+              <i class="fas fa-tasks fa-2x text-warning opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notificaciones de reemplazo -->
+  {% if notificaciones_pendientes is defined and notificaciones_pendientes > 0 %}
+  <div class="col-12">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      <strong>¡Atención!</strong> Hay {{ notificaciones_pendientes }}
+      notificación(es) de reemplazo pendiente(s).
+      <a href="{{ url_for('admin.reportar_ausencia') }}" class="alert-link"
+        >Ver detalles</a
+      >
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Acciones rápidas -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('admin.nuevo_usuario') }}"
+              class="btn btn-outline-primary w-100"
+            >
+              <i class="fas fa-user-plus me-2"></i>Registrar Usuario
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('admin.nuevo_curso') }}"
+              class="btn btn-outline-info w-100"
+            >
+              <i class="fas fa-plus me-2"></i>Crear Curso
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('admin.nueva_asignatura') }}"
+              class="btn btn-outline-success w-100"
+            >
+              <i class="fas fa-book-open me-2"></i>Nueva Asignatura
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('admin.reportar_ausencia') }}"
+              class="btn btn-outline-warning w-100"
+            >
+              <i class="fas fa-user-times me-2"></i>Reportar Ausencia
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('admin.horarios') }}"
+              class="btn btn-outline-secondary w-100"
+            >
+              <i class="fas fa-calendar-alt me-2"></i>Ver Horarios
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('horario.tiempo_real') }}"
+              class="btn btn-outline-danger w-100"
+            >
+              <i class="fas fa-clock me-2"></i>Sistema Tiempo Real
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información del sistema -->
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-info-circle me-2"></i>Sistema</h5>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <strong>Plataforma Estudiantil</strong><br />
+          <small class="text-muted">{{ config.COLEGIO_NOMBRE }}</small>
+        </div>
+
+        <hr />
+
+        <div class="mb-2">
+          <strong>Grados disponibles:</strong><br />
+          <small>
+            {% for grado in config.GRADOS_DISPONIBLES %}
+            <span class="badge bg-light text-dark me-1">{{ grado }}</span>
+            {% endfor %}
+          </small>
+        </div>
+
+        <div class="mb-2">
+          <strong>Periodos académicos:</strong><br />
+          <small>
+            {% for periodo in config.PERIODOS_ACADEMICOS %}
+            <span class="badge bg-secondary me-1">{{ periodo }}</span>
+            {% endfor %}
+          </small>
+        </div>
+
+        <hr />
+
+        <div class="text-center">
+          <small class="text-muted">
+            <i class="fas fa-shield-alt me-1"></i>
+            Panel de Administrador
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Enlaces rápidos en la parte inferior -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <h6 class="card-title">
+          <i class="fas fa-link me-2"></i>Enlaces Rápidos
+        </h6>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('admin.usuarios') }}">
+                <i class="fas fa-users me-1"></i>Gestión de Usuarios
+              </a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('admin.cursos') }}">
+                <i class="fas fa-school me-1"></i>Administrar Cursos
+              </a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('admin.asignaturas') }}">
+                <i class="fas fa-book me-1"></i>Gestión de Asignaturas
+              </a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('horario.resumen_semanal') }}">
+                <i class="fas fa-calendar-week me-1"></i>Resumen Semanal
+              </a>
+            </li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Actualizar la hora cada minuto
+  setInterval(function () {
+    const timeElement = document.querySelector(".fa-clock").parentElement;
+    if (timeElement) {
+      // Función para formatear la fecha en español
+      const formatDate = (date) => {
+        const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 
+                       'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        
+        const dayName = days[date.getDay()];
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        
+        return `${dayName}, ${day} de ${month} de ${year} - ${hours}:${minutes}`;
+      };
+      
+      timeElement.innerHTML =
+        '<i class="fas fa-clock me-1"></i>' +
+        formatDate(new Date());
+    }
+  }, 60000);
+</script>
+</script>
+{% endblock %}

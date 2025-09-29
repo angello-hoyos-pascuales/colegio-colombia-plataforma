@@ -1,0 +1,272 @@
+{% extends "base.html" %} {% block title %}Horario en Tiempo Real - Colegio
+Colombia{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div
+    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+  >
+    <h1 class="h2">📅 Horario en Tiempo Real</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          onclick="refreshHorario()"
+        >
+          <i class="fas fa-sync-alt"></i> Actualizar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado Actual -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">📊 Estado Actual del Horario</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="text-center">
+                <h3 class="text-success">{{ clases_activas|length }}</h3>
+                <p class="text-muted">Clases en Curso</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <h3 class="text-warning">{{ profesores_ausentes|length }}</h3>
+                <p class="text-muted">Profesores Ausentes</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <h3 class="text-info">{{ reemplazos_activos|length }}</h3>
+                <p class="text-muted">Reemplazos Activos</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="text-center">
+                <h3 class="text-danger">{{ aulas_libres|length }}</h3>
+                <p class="text-muted">Aulas Libres</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clases en Curso -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h6 class="mb-0">✅ Clases en Curso</h6>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto">
+          {% if clases_activas %} {% for horario in clases_activas %}
+          <div
+            class="d-flex justify-content-between align-items-center border-bottom py-2"
+          >
+            <div>
+              <strong>{{ horario.asignatura.nombre }}</strong><br />
+              <small class="text-muted">
+                {{ horario.curso.nombre_completo }} - {{ horario.aula }}
+                <br />Prof. {{ horario.profesor.nombre }} {{
+                horario.profesor.apellido }}
+              </small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-success">
+                {{ horario.hora_inicio.strftime('%H:%M') }} - {{
+                horario.hora_fin.strftime('%H:%M') }}
+              </span>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <p class="text-muted text-center py-4">
+            <i class="fas fa-calendar-times fa-2x mb-2"></i><br />
+            No hay clases programadas en este momento
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Profesores Ausentes -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-warning text-white">
+          <h6 class="mb-0">⚠️ Profesores Ausentes</h6>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto">
+          {% if profesores_ausentes %} {% for ausencia in profesores_ausentes %}
+          <div
+            class="d-flex justify-content-between align-items-center border-bottom py-2"
+          >
+            <div>
+              <strong
+                >Prof. {{ ausencia.profesor.nombre }} {{
+                ausencia.profesor.apellido }}</strong
+              ><br />
+              <small class="text-muted">
+                {{ ausencia.horario.asignatura.nombre }} - {{
+                ausencia.horario.curso.nombre_completo }}
+              </small>
+            </div>
+            <div class="text-end">
+              <button
+                class="btn btn-sm btn-outline-primary"
+                onclick="buscarReemplazo({{ ausencia.id }})"
+              >
+                <i class="fas fa-search"></i> Reemplazo
+              </button>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <p class="text-muted text-center py-4">
+            <i class="fas fa-check-circle fa-2x mb-2"></i><br />
+            Todos los profesores están presentes
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reemplazos Activos -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">🔄 Reemplazos Activos</h6>
+        </div>
+        <div class="card-body" style="max-height: 300px; overflow-y: auto">
+          {% if reemplazos_activos %} {% for reemplazo in reemplazos_activos %}
+          <div
+            class="d-flex justify-content-between align-items-center border-bottom py-2"
+          >
+            <div>
+              <strong
+                >Prof. {{ reemplazo.profesor_reemplazo.nombre }} {{
+                reemplazo.profesor_reemplazo.apellido }}</strong
+              ><br />
+              <small class="text-muted">
+                Reemplaza a: Prof. {{ reemplazo.profesor_ausente.nombre }}<br />
+                {{ reemplazo.horario_original.asignatura.nombre }} - {{
+                reemplazo.horario_original.curso.nombre_completo }}
+              </small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-info">Activo</span>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <p class="text-muted text-center py-4">
+            <i class="fas fa-user-check fa-2x mb-2"></i><br />
+            No hay reemplazos activos
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Aulas Libres -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-secondary text-white">
+          <h6 class="mb-0">🏫 Aulas Disponibles</h6>
+        </div>
+        <div class="card-body" style="max-height: 300px; overflow-y: auto">
+          {% if aulas_libres %}
+          <div class="row">
+            {% for aula in aulas_libres %}
+            <div class="col-md-6 mb-2">
+              <div class="card card-body bg-light">
+                <div class="d-flex justify-content-between">
+                  <strong>{{ aula }}</strong>
+                  <span class="badge bg-success">Libre</span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-4">
+            <i class="fas fa-building fa-2x mb-2"></i><br />
+            Todas las aulas están ocupadas
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximas Clases -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">⏰ Próximas Clases (Siguiente Hora)</h6>
+        </div>
+        <div class="card-body">
+          {% if proximas_clases %}
+          <div class="table-responsive">
+            <table class="table table-striped table-sm">
+              <thead>
+                <tr>
+                  <th>Hora</th>
+                  <th>Asignatura</th>
+                  <th>Curso</th>
+                  <th>Profesor</th>
+                  <th>Aula</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for horario in proximas_clases %}
+                <tr>
+                  <td>
+                    <span class="badge bg-outline-primary">
+                      {{ horario.hora_inicio.strftime('%H:%M') }} - {{
+                      horario.hora_fin.strftime('%H:%M') }}
+                    </span>
+                  </td>
+                  <td>{{ horario.asignatura.nombre }}</td>
+                  <td>{{ horario.curso.nombre_completo }}</td>
+                  <td>
+                    {{ horario.profesor.nombre }} {{ horario.profesor.apellido
+                    }}
+                  </td>
+                  <td>{{ horario.aula }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted text-center py-4">
+            <i class="fas fa-clock fa-2x mb-2"></i><br />
+            No hay más clases programadas hoy
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function refreshHorario() {
+    location.reload();
+  }
+
+  function buscarReemplazo(ausenciaId) {
+    // Aquí se implementaría la lógica para buscar reemplazos
+    alert("Función de búsqueda de reemplazo para ausencia ID: " + ausenciaId);
+  }
+
+  // Auto-refresh cada 30 segundos
+  setInterval(refreshHorario, 30000);
+</script>
+{% endblock %}

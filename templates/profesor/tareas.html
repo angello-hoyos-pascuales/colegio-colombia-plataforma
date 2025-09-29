@@ -1,0 +1,146 @@
+{% extends "base.html" %} {% block title %}Mis Tareas - Profesor{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-tasks me-2"></i>
+          Mis Tareas
+        </h2>
+        <a href="{{ url_for('profesor.nueva_tarea') }}" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i>Nueva Tarea
+        </a>
+      </div>
+
+      {% if tareas.items %}
+      <div class="row">
+        {% for tarea in tareas.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100">
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
+              <h6 class="card-title mb-0">{{ tarea.titulo }}</h6>
+              <span
+                class="badge {% if tarea.fecha_entrega < moment().date() %}bg-danger{% else %}bg-success{% endif %}"
+              >
+                {% if tarea.fecha_entrega < moment().date() %} Vencida {% else
+                %} Activa {% endif %}
+              </span>
+            </div>
+            <div class="card-body">
+              <p class="card-text">
+                <small class="text-muted">
+                  <i class="fas fa-book me-1"></i>
+                  {% if tarea.asignatura %} {{ tarea.asignatura.nombre }} - {{
+                  tarea.asignatura.curso.nombre_completo }} {% else %} Sin
+                  asignatura {% endif %}
+                </small>
+              </p>
+              <p class="card-text">
+                {{ tarea.descripcion[:100] }}{% if tarea.descripcion|length >
+                100 %}...{% endif %}
+              </p>
+              <p class="card-text">
+                <small class="text-muted">
+                  <i class="fas fa-calendar me-1"></i>
+                  Entrega: {{ tarea.fecha_entrega.strftime('%d/%m/%Y') }}
+                </small>
+              </p>
+            </div>
+            <div class="card-footer">
+              <div class="btn-group w-100" role="group">
+                <a
+                  href="{{ url_for('profesor.calificar_tarea', tarea_id=tarea.id) }}"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  <i class="fas fa-check me-1"></i>Calificar
+                </a>
+                <a
+                  href="{{ url_for('profesor.editar_tarea', tarea_id=tarea.id) }}"
+                  class="btn btn-outline-secondary btn-sm"
+                >
+                  <i class="fas fa-edit me-1"></i>Editar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Paginación -->
+      {% if tareas.pages > 1 %}
+      <nav aria-label="Paginación de tareas">
+        <ul class="pagination justify-content-center">
+          {% if tareas.has_prev %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="{{ url_for('profesor.tareas', page=tareas.prev_num) }}"
+            >
+              <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+          </li>
+          {% endif %} {% for page_num in tareas.iter_pages() %} {% if page_num
+          %} {% if page_num != tareas.page %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="{{ url_for('profesor.tareas', page=page_num) }}"
+              >{{ page_num }}</a
+            >
+          </li>
+          {% else %}
+          <li class="page-item active">
+            <span class="page-link">{{ page_num }}</span>
+          </li>
+          {% endif %} {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+          {% endif %} {% endfor %} {% if tareas.has_next %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="{{ url_for('profesor.tareas', page=tareas.next_num) }}"
+            >
+              Siguiente <i class="fas fa-chevron-right"></i>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %} {% else %}
+      <div class="text-center">
+        <div class="alert alert-info" role="alert">
+          <i class="fas fa-info-circle me-2"></i>
+          No tienes tareas creadas aún.
+          <br />
+          <a
+            href="{{ url_for('profesor.nueva_tarea') }}"
+            class="btn btn-primary mt-3"
+          >
+            <i class="fas fa-plus me-2"></i>Crear Primera Tarea
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    transition: transform 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+  .badge {
+    font-size: 0.75em;
+  }
+</style>
+{% endblock %}

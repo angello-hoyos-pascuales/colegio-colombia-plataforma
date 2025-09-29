@@ -1,0 +1,135 @@
+{% extends "base.html" %} {% block title %}{{ title }} - Profesor{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-plus-circle me-2"></i>
+            {{ title }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                {{ form.titulo.label(class="form-label") }} {{
+                form.titulo(class="form-control") }} {% if form.titulo.errors %}
+                <div class="text-danger">
+                  {% for error in form.titulo.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                {{ form.asignatura_id.label(class="form-label") }} {{
+                form.asignatura_id(class="form-select") }} {% if
+                form.asignatura_id.errors %}
+                <div class="text-danger">
+                  {% for error in form.asignatura_id.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              {{ form.descripcion.label(class="form-label") }} {{
+              form.descripcion(class="form-control", rows="4") }} {% if
+              form.descripcion.errors %}
+              <div class="text-danger">
+                {% for error in form.descripcion.errors %}
+                <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                {{ form.fecha_entrega.label(class="form-label") }} {{
+                form.fecha_entrega(class="form-control", type="date") }} {% if
+                form.fecha_entrega.errors %}
+                <div class="text-danger">
+                  {% for error in form.fecha_entrega.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="col-md-6 mb-3">
+                {{ form.valor_puntos.label(class="form-label") }} {{
+                form.valor_puntos(class="form-control", min="0", max="100",
+                step="0.1") }} {% if form.valor_puntos.errors %}
+                <div class="text-danger">
+                  {% for error in form.valor_puntos.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            {% if form.archivo %}
+            <div class="mb-3">
+              {{ form.archivo.label(class="form-label") }} {{
+              form.archivo(class="form-control",
+              accept=".pdf,.doc,.docx,.txt,.jpg,.png") }} {% if
+              form.archivo.errors %}
+              <div class="text-danger">
+                {% for error in form.archivo.errors %}
+                <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Formatos permitidos: PDF, DOC, DOCX, TXT, JPG, PNG (máximo 10MB)
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between">
+              <a
+                href="{{ url_for('profesor.tareas') }}"
+                class="btn btn-secondary"
+              >
+                <i class="fas fa-arrow-left me-2"></i>Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>Guardar Tarea
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Validación de fecha
+    const fechaEntrega = document.getElementById("fecha_entrega");
+    if (fechaEntrega) {
+      const hoy = new Date().toISOString().split("T")[0];
+      fechaEntrega.min = hoy;
+    }
+
+    // Auto-resize textarea
+    const descripcion = document.getElementById("descripcion");
+    if (descripcion) {
+      descripcion.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = this.scrollHeight + "px";
+      });
+    }
+  });
+</script>
+{% endblock %}

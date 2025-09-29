@@ -1,0 +1,468 @@
+{% extends "base.html" %} {% block title %}Mi Horario - Estudiante{% endblock %}
+{% block extra_css %}
+<style>
+  .horario-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .horario-table {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  .hora-cell {
+    background: #f8f9fa;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: middle;
+    width: 100px;
+  }
+  .dia-header {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    padding: 1rem 0.5rem;
+  }
+  .materia-cell {
+    padding: 0.8rem 0.5rem;
+    border: 1px solid #dee2e6;
+    position: relative;
+    transition: all 0.3s ease;
+    min-height: 60px;
+    vertical-align: top;
+  }
+  .materia-cell:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.02);
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  .materia-info {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  .materia-nombre {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2px;
+  }
+  .profesor-nombre {
+    color: #666;
+    font-size: 0.8rem;
+  }
+  .aula-info {
+    color: #007bff;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .current-time {
+    background: linear-gradient(45deg, #28a745, #20c997) !important;
+    color: white !important;
+    animation: pulse 2s infinite;
+  }
+  .recreo-cell {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+    color: white;
+    text-align: center;
+    font-weight: bold;
+  }
+  .empty-cell {
+    background: #f9f9f9;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+  }
+  .today-column {
+    background: rgba(0, 123, 255, 0.05) !important;
+  }
+  .info-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+  }
+  @media (max-width: 768px) {
+    .horario-table {
+      font-size: 0.8rem;
+    }
+    .materia-cell {
+      padding: 0.5rem 0.3rem;
+      min-height: 50px;
+    }
+    .hora-cell {
+      width: 80px;
+      padding: 0.5rem 0.2rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="horario-header text-center">
+    <div class="row align-items-center">
+      <div class="col-md-2">
+        <div
+          class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center"
+          style="width: 80px; height: 80px"
+        >
+          <i
+            class="fas fa-calendar-alt text-primary"
+            style="font-size: 2rem"
+          ></i>
+        </div>
+      </div>
+      <div class="col-md-10 text-md-start">
+        <h2 class="mb-1">Mi Horario Académico</h2>
+        <p class="mb-0 opacity-75">
+          <i class="fas fa-user me-2"></i>{{ current_user.nombre_completo }}
+          <span class="mx-3">|</span>
+          <i class="fas fa-graduation-cap me-2"></i>{{ current_user.curso.nombre
+          }} - Sección {{ current_user.curso.seccion }}
+          <span class="mx-3">|</span>
+          <i class="fas fa-calendar me-2"></i>Año {{ current_user.curso.año }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('estudiante.dashboard') }}">Dashboard</a>
+      </li>
+      <li class="breadcrumb-item active">Mi Horario</li>
+    </ol>
+  </nav>
+
+  <!-- Información actual -->
+  <div class="info-card">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <div>
+        <h6 class="mb-1">
+          <i class="fas fa-clock me-2"></i>Información Actual
+        </h6>
+        <p class="mb-0">
+          <strong>Hoy:</strong> {{ moment().strftime('%A, %d de %B de %Y') }}
+          <span class="mx-3">|</span>
+          <strong>Hora actual:</strong>
+          <span id="currentTime">{{ moment().strftime('%H:%M:%S') }}</span>
+        </p>
+      </div>
+      <div class="legend">
+        <div class="legend-item">
+          <div
+            class="legend-color"
+            style="background: linear-gradient(45deg, #28a745, #20c997)"
+          ></div>
+          <span>Clase actual</span>
+        </div>
+        <div class="legend-item">
+          <div
+            class="legend-color"
+            style="background: rgba(0, 123, 255, 0.2)"
+          ></div>
+          <span>Día actual</span>
+        </div>
+        <div class="legend-item">
+          <div
+            class="legend-color"
+            style="background: linear-gradient(45deg, #ffc107, #fd7e14)"
+          ></div>
+          <span>Recreo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla del horario -->
+  <div class="horario-table">
+    <div class="table-responsive">
+      <table class="table table-bordered mb-0">
+        <thead>
+          <tr>
+            <th class="hora-cell">Hora</th>
+            {% for dia in dias_semana %}
+            <th class="dia-header {% if dia.es_hoy %}today-column{% endif %}">
+              {{ dia.nombre }} {% if dia.es_hoy %}
+              <br /><small class="opacity-75">Hoy</small>
+              {% endif %}
+            </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for hora in horarios %}
+          <tr>
+            <td class="hora-cell">
+              <div class="text-center">
+                <strong>{{ hora.periodo }}</strong>
+                <br />
+                <small>{{ hora.hora_inicio }} - {{ hora.hora_fin }}</small>
+              </div>
+            </td>
+
+            {% for dia in dias_semana %} {% set clase =
+            hora.clases.get(dia.numero) %}
+            <td
+              class="materia-cell {% if dia.es_hoy and hora.es_actual %}current-time{% elif dia.es_hoy %}today-column{% endif %}"
+            >
+              {% if clase %} {% if clase.es_recreo %}
+              <div
+                class="recreo-cell h-100 d-flex align-items-center justify-content-center"
+              >
+                <div>
+                  <i class="fas fa-coffee me-2"></i>
+                  <strong>RECREO</strong>
+                </div>
+              </div>
+              {% else %}
+              <div class="materia-info">
+                <div class="materia-nombre">{{ clase.asignatura.nombre }}</div>
+                <div class="profesor-nombre">
+                  <i class="fas fa-user-tie me-1"></i>{{
+                  clase.profesor.nombre_completo }}
+                </div>
+                {% if clase.aula %}
+                <div class="aula-info">
+                  <i class="fas fa-door-open me-1"></i>{{ clase.aula }}
+                </div>
+                {% endif %}
+              </div>
+              {% endif %} {% else %}
+              <div
+                class="empty-cell h-100 d-flex align-items-center justify-content-center"
+              >
+                <small>Libre</small>
+              </div>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Información adicional -->
+  <div class="row mt-4">
+    <div class="col-lg-6">
+      <div class="info-card">
+        <h6 class="mb-3">
+          <i class="fas fa-info-circle me-2"></i>Información del Curso
+        </h6>
+        <div class="row">
+          <div class="col-6">
+            <strong>Curso:</strong>
+            <p class="mb-2">{{ current_user.curso.nombre }}</p>
+            <strong>Sección:</strong>
+            <p class="mb-0">{{ current_user.curso.seccion }}</p>
+          </div>
+          <div class="col-6">
+            <strong>Año lectivo:</strong>
+            <p class="mb-2">{{ current_user.curso.año }}</p>
+            <strong>Director de grupo:</strong>
+            <p class="mb-0">
+              {{ current_user.curso.director_grupo.nombre_completo if
+              current_user.curso.director_grupo else 'No asignado' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="info-card">
+        <h6 class="mb-3">
+          <i class="fas fa-chart-bar me-2"></i>Estadísticas del Horario
+        </h6>
+        <div class="row">
+          <div class="col-6">
+            <strong>Total de asignaturas:</strong>
+            <p class="mb-2">{{ total_asignaturas }}</p>
+            <strong>Horas semanales:</strong>
+            <p class="mb-0">{{ horas_semanales }}</p>
+          </div>
+          <div class="col-6">
+            <strong>Días de clase:</strong>
+            <p class="mb-2">Lunes a Viernes</p>
+            <strong>Recreos:</strong>
+            <p class="mb-0">{{ total_recreos }} por día</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Próximas clases (solo si es día de semana) -->
+  {% if proximas_clases %}
+  <div class="info-card">
+    <h6 class="mb-3">
+      <i class="fas fa-clock me-2"></i>Próximas Clases de Hoy
+    </h6>
+    <div class="row">
+      {% for clase in proximas_clases %}
+      <div class="col-md-4 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title">{{ clase.asignatura.nombre }}</h6>
+            <p class="card-text small mb-1">
+              <i class="fas fa-clock me-1"></i>{{ clase.hora_inicio }} - {{
+              clase.hora_fin }}
+            </p>
+            <p class="card-text small mb-1">
+              <i class="fas fa-user-tie me-1"></i>{{
+              clase.profesor.nombre_completo }}
+            </p>
+            {% if clase.aula %}
+            <p class="card-text small mb-0">
+              <i class="fas fa-door-open me-1"></i>{{ clase.aula }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Botones de acción -->
+  <div class="text-center mt-4">
+    <button class="btn btn-primary me-2" onclick="window.print()">
+      <i class="fas fa-print me-2"></i>Imprimir Horario
+    </button>
+    <a
+      href="{{ url_for('estudiante.dashboard') }}"
+      class="btn btn-outline-secondary"
+    >
+      <i class="fas fa-home me-2"></i>Volver al Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Actualizar hora actual cada segundo
+    function updateCurrentTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString("es-CO", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      document.getElementById("currentTime").textContent = timeString;
+    }
+
+    // Actualizar cada segundo
+    setInterval(updateCurrentTime, 1000);
+
+    // Animación de entrada para las celdas
+    const cells = document.querySelectorAll(".materia-cell");
+    cells.forEach((cell, index) => {
+      cell.style.opacity = "0";
+      cell.style.transform = "scale(0.9)";
+      setTimeout(() => {
+        cell.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+        cell.style.opacity = "1";
+        cell.style.transform = "scale(1)";
+      }, index * 20);
+    });
+
+    // Funcionalidad para detectar la clase actual
+    function highlightCurrentClass() {
+      const now = new Date();
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const currentDay = now.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+
+      // Solo resaltar si es día de semana
+      if (currentDay >= 1 && currentDay <= 5) {
+        document.querySelectorAll(".current-time").forEach((cell) => {
+          cell.classList.remove("current-time");
+        });
+
+        // Buscar la celda correspondiente al día y hora actuales
+        const currentCell = document.querySelector(
+          `[data-day="${currentDay}"][data-time="${currentTime}"]`
+        );
+        if (currentCell) {
+          currentCell.classList.add("current-time");
+        }
+      }
+    }
+
+    // Ejecutar cada minuto
+    setInterval(highlightCurrentClass, 60000);
+    highlightCurrentClass(); // Ejecutar inmediatamente
+
+    // Mejorar la impresión
+    window.addEventListener("beforeprint", function () {
+      document.body.classList.add("printing");
+    });
+
+    window.addEventListener("afterprint", function () {
+      document.body.classList.remove("printing");
+    });
+  });
+</script>
+
+<style>
+  @media print {
+    .horario-header,
+    .breadcrumb,
+    .info-card,
+    .btn {
+      display: none !important;
+    }
+
+    .horario-table {
+      box-shadow: none;
+      margin-top: 0;
+    }
+
+    .materia-cell:hover {
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .current-time {
+      animation: none !important;
+    }
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,296 @@
+{% extends "base.html" %} {% block title %}Confirmar Reemplazos -
+Administrador{% endblock %} {% block content %}
+<div class="container-fluid">
+  <div
+    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+  >
+    <h1 class="h2">✅ Confirmar Reemplazos de Ausencia</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2">
+        <a
+          href="{{ url_for('admin.reportar_ausencia') }}"
+          class="btn btn-sm btn-outline-secondary"
+        >
+          <i class="fas fa-arrow-left"></i> Volver
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información de la Ausencia -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="alert alert-warning" role="alert">
+        <h5 class="alert-heading">
+          <i class="fas fa-exclamation-triangle"></i>
+          Ausencia Reportada
+        </h5>
+        <p class="mb-2">
+          <strong>Profesor Ausente:</strong> {{ profesor_ausente.nombre }} {{
+          profesor_ausente.apellido }}<br />
+          <strong>Fecha:</strong> {{ fecha_ausencia.strftime('%d/%m/%Y') }} ({{
+          fecha_ausencia.strftime('%A') | capitalize }})<br />
+          <strong>Clases Afectadas:</strong> {{ clases_afectadas|length }}
+          clase(s)
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario de Confirmación -->
+  <form action="{{ url_for('admin.confirmar_reemplazos') }}" method="POST">
+    {{ csrf_token }}
+    <input
+      type="hidden"
+      name="profesor_ausente_id"
+      value="{{ profesor_ausente.id }}"
+    />
+    <input
+      type="hidden"
+      name="fecha_ausencia"
+      value="{{ fecha_ausencia.strftime('%Y-%m-%d') }}"
+    />
+
+    <!-- Clases Afectadas y Reemplazos -->
+    {% for clase in clases_afectadas %}
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h6 class="mb-0">
+          <i class="fas fa-clock"></i>
+          {{ clase.hora_inicio.strftime('%H:%M') }} - {{
+          clase.hora_fin.strftime('%H:%M') }} &nbsp;|&nbsp;
+          <i class="fas fa-book"></i>
+          {{ clase.asignatura.nombre }} &nbsp;|&nbsp;
+          <i class="fas fa-users"></i>
+          {{ clase.curso.nombre_completo }} &nbsp;|&nbsp;
+          <i class="fas fa-door-open"></i>
+          {{ clase.aula }}
+        </h6>
+      </div>
+      <div class="card-body">
+        <input
+          type="hidden"
+          name="clase_{{ loop.index0 }}_id"
+          value="{{ clase.id }}"
+        />
+
+        <!-- Profesores de Reemplazo Sugeridos -->
+        <h6 class="mb-3">
+          <i class="fas fa-user-plus text-success"></i>
+          Profesores de Reemplazo Disponibles:
+        </h6>
+
+        {% set profesores_para_clase = reemplazos_sugeridos |
+        selectattr('clase_id', 'equalto', clase.id) | list %} {% if
+        profesores_para_clase %}
+        <div class="row">
+          {% for reemplazo in profesores_para_clase %}
+          <div class="col-md-6 mb-3">
+            <div class="card border-success">
+              <div class="card-body">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="reemplazo_{{ loop.outer.index0 }}"
+                    id="reemplazo_{{ loop.outer.index0 }}_{{ loop.index0 }}"
+                    value="{{ reemplazo.profesor_id }}"
+                  />
+                  <label
+                    class="form-check-label"
+                    for="reemplazo_{{ loop.outer.index0 }}_{{ loop.index0 }}"
+                  >
+                    <div class="d-flex align-items-center">
+                      <div class="flex-grow-1">
+                        <strong
+                          >{{ reemplazo.profesor.nombre }} {{
+                          reemplazo.profesor.apellido }}</strong
+                        >
+                        <br />
+                        <small class="text-muted">
+                          <i class="fas fa-envelope"></i> {{
+                          reemplazo.profesor.email }}
+                        </small>
+                        {% if reemplazo.compatibilidad_asignatura %}
+                        <br /><small class="text-success">
+                          <i class="fas fa-check"></i>
+                          Especialista en {{ clase.asignatura.nombre }}
+                        </small>
+                        {% endif %} {% if reemplazo.disponibilidad_total %}
+                        <br /><small class="text-info">
+                          <i class="fas fa-clock"></i>
+                          Disponible todo el bloque
+                        </small>
+                        {% endif %}
+                      </div>
+                      <div class="text-end">
+                        <span class="badge bg-success">
+                          {{ reemplazo.puntuacion_compatibilidad }}% Compatible
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+          <!-- Opción de No Reemplazo -->
+          <div class="col-md-6 mb-3">
+            <div class="card border-warning">
+              <div class="card-body">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="reemplazo_{{ loop.index0 }}"
+                    id="sin_reemplazo_{{ loop.index0 }}"
+                    value="sin_reemplazo"
+                  />
+                  <label
+                    class="form-check-label"
+                    for="sin_reemplazo_{{ loop.index0 }}"
+                  >
+                    <div class="text-warning">
+                      <strong><i class="fas fa-ban"></i> Sin Reemplazo</strong>
+                      <br />
+                      <small>Cancelar esta clase</small>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle"></i>
+          <strong>No hay profesores de reemplazo disponibles</strong>
+          <br />
+          No se encontraron profesores disponibles para esta clase. La clase
+          será cancelada automáticamente.
+          <input
+            type="hidden"
+            name="reemplazo_{{ loop.index0 }}"
+            value="sin_reemplazo"
+          />
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Botones de Acción -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <a
+                href="{{ url_for('admin.reportar_ausencia') }}"
+                class="btn btn-outline-secondary me-md-2"
+              >
+                <i class="fas fa-times"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-success" id="confirmar-btn">
+                <i class="fas fa-check"></i> Confirmar Reemplazos
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Información Adicional -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-info-circle"></i>
+            Información Importante
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>
+              Los profesores de reemplazo seleccionados recibirán una
+              notificación automática.
+            </li>
+            <li>
+              La compatibilidad se calcula según la especialización del profesor
+              en la materia.
+            </li>
+            <li>
+              Si no hay reemplazos disponibles, las clases serán canceladas y se
+              notificará a los estudiantes.
+            </li>
+            <li>
+              Todos los cambios quedarán registrados en el sistema para
+              seguimiento.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const confirmarBtn = document.getElementById("confirmar-btn");
+
+    // Validar que se haya seleccionado un reemplazo para cada clase
+    if (form && confirmarBtn) {
+      confirmarBtn.addEventListener("click", function (e) {
+        const gruposReemplazo = document.querySelectorAll(
+          'input[type="radio"][name^="reemplazo_"]'
+        );
+        const clases = new Set();
+
+        // Identificar todas las clases
+        gruposReemplazo.forEach((radio) => {
+          const claseIndex = radio.name.match(/reemplazo_(\d+)/)[1];
+          clases.add(claseIndex);
+        });
+
+        // Verificar que cada clase tenga una selección
+        let todasSeleccionadas = true;
+        clases.forEach((claseIndex) => {
+          const radiosClase = document.querySelectorAll(
+            `input[name="reemplazo_${claseIndex}"]`
+          );
+          const algunoSeleccionado = Array.from(radiosClase).some(
+            (radio) => radio.checked
+          );
+
+          if (!algunoSeleccionado) {
+            todasSeleccionadas = false;
+          }
+        });
+
+        if (!todasSeleccionadas) {
+          e.preventDefault();
+          alert(
+            "Por favor, seleccione una opción de reemplazo para todas las clases afectadas."
+          );
+          return false;
+        }
+
+        // Confirmación final
+        if (
+          !confirm(
+            "¿Confirma que desea proceder con los reemplazos seleccionados?"
+          )
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

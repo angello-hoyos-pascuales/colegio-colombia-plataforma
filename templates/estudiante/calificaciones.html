@@ -1,0 +1,363 @@
+{% extends "base.html" %} {% block title %}Mis Calificaciones - Estudiante{%
+endblock %} {% block extra_css %}
+<style>
+  .calificacion-card {
+    transition: transform 0.2s ease-in-out;
+    border-left: 4px solid #007bff;
+  }
+  .calificacion-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .nota-badge {
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+  }
+  .nota-excelente {
+    background: linear-gradient(45deg, #28a745, #20c997);
+  }
+  .nota-buena {
+    background: linear-gradient(45deg, #17a2b8, #007bff);
+  }
+  .nota-aceptable {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+  }
+  .nota-deficiente {
+    background: linear-gradient(45deg, #dc3545, #e83e8c);
+  }
+  .estudiante-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .promedio-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .filter-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header del estudiante -->
+  <div class="estudiante-header text-center">
+    <div class="row align-items-center">
+      <div class="col-md-2">
+        <div
+          class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center"
+          style="width: 80px; height: 80px"
+        >
+          <i
+            class="fas fa-graduation-cap text-primary"
+            style="font-size: 2rem"
+          ></i>
+        </div>
+      </div>
+      <div class="col-md-10 text-md-start">
+        <h2 class="mb-1">Mis Calificaciones</h2>
+        <p class="mb-0 opacity-75">
+          <i class="fas fa-user me-2"></i>{{ current_user.nombre_completo }}
+          <span class="mx-3">|</span>
+          <i class="fas fa-envelope me-2"></i>{{ current_user.email }}
+          <span class="mx-3">|</span>
+          <i class="fas fa-id-card me-2"></i>{{ current_user.numero_documento }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('estudiante.dashboard') }}">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active">Mis Calificaciones</li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Filtros y Promedios -->
+  <div class="row mb-4">
+    <!-- Filtros -->
+    <div class="col-md-8">
+      <div class="filter-card">
+        <h6 class="mb-3">
+          <i class="fas fa-filter me-2"></i>Filtrar por Periodo
+        </h6>
+        <div class="btn-group" role="group">
+          <a
+            href="{{ url_for('estudiante.calificaciones', periodo='todos') }}"
+            class="btn {% if periodo_filtro == 'todos' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+          >
+            Todos los Periodos
+          </a>
+          <a
+            href="{{ url_for('estudiante.calificaciones', periodo='1') }}"
+            class="btn {% if periodo_filtro == '1' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+          >
+            1º Periodo
+          </a>
+          <a
+            href="{{ url_for('estudiante.calificaciones', periodo='2') }}"
+            class="btn {% if periodo_filtro == '2' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+          >
+            2º Periodo
+          </a>
+          <a
+            href="{{ url_for('estudiante.calificaciones', periodo='3') }}"
+            class="btn {% if periodo_filtro == '3' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+          >
+            3º Periodo
+          </a>
+          <a
+            href="{{ url_for('estudiante.calificaciones', periodo='4') }}"
+            class="btn {% if periodo_filtro == '4' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+          >
+            4º Periodo
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promedios por Periodo -->
+    <div class="col-md-4">
+      <div class="promedio-card">
+        <h6 class="mb-3">
+          <i class="fas fa-chart-line me-2"></i>Promedios por Periodo
+        </h6>
+        {% if promedios %} {% for periodo, promedio in promedios.items() %}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span>{{ periodo }}:</span>
+          <span class="fw-bold">{{ "%.1f"|format(promedio) }}</span>
+        </div>
+        {% endfor %} {% else %}
+        <p class="mb-0">Sin calificaciones aún</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if calificaciones.items %}
+  <!-- Estadísticas rápidas -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">{{ calificaciones.total }}</h4>
+          <small>Total Calificaciones</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">
+            {{ calificaciones.items|selectattr('nota', 'ge', 3.0)|list|length }}
+          </h4>
+          <small>Aprobadas</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">
+            {{ calificaciones.items|selectattr('nota', 'lt', 3.0)|list|length }}
+          </h4>
+          <small>Por Mejorar</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">
+            {{ "%.1f"|format((calificaciones.items|map(attribute='nota')|sum) /
+            (calificaciones.items|length)) }}
+          </h4>
+          <small>Promedio General</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de calificaciones -->
+  <div class="row">
+    {% for calificacion in calificaciones.items %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div class="card calificacion-card h-100">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0">{{ calificacion.tarea.nombre }}</h6>
+          <span
+            class="nota-badge text-white {% if calificacion.nota >= 4.5 %}nota-excelente {% elif calificacion.nota >= 3.5 %}nota-buena {% elif calificacion.nota >= 3.0 %}nota-aceptable {% else %}nota-deficiente{% endif %}"
+          >
+            {{ "%.1f"|format(calificacion.nota) }}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="mb-2">
+            <small class="text-muted">Asignatura:</small>
+            <p class="mb-1 fw-bold">
+              {{ calificacion.tarea.asignatura.nombre }}
+            </p>
+          </div>
+          <div class="mb-2">
+            <small class="text-muted">Profesor:</small>
+            <p class="mb-1">
+              {{ calificacion.tarea.asignatura.profesor.nombre_completo }}
+            </p>
+          </div>
+          <div class="mb-2">
+            <small class="text-muted">Periodo:</small>
+            <span class="badge bg-secondary"
+              >{{ calificacion.periodo }}º Periodo</span
+            >
+          </div>
+          {% if calificacion.comentarios %}
+          <div class="mb-2">
+            <small class="text-muted">Comentarios del profesor:</small>
+            <p class="small mb-0 text-muted">{{ calificacion.comentarios }}</p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="card-footer text-muted">
+          <small>
+            <i class="fas fa-calendar me-1"></i>
+            {{ calificacion.fecha_calificacion.strftime('%d/%m/%Y %H:%M') if
+            calificacion.fecha_calificacion else 'Sin fecha' }}
+          </small>
+          <div class="mt-2">
+            <a
+              href="{{ url_for('estudiante.detalle_tarea', id=calificacion.tarea.id) }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              <i class="fas fa-eye me-1"></i>Ver Tarea
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Paginación -->
+  {% if calificaciones.pages > 1 %}
+  <nav aria-label="Navegación de calificaciones" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if calificaciones.has_prev %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('estudiante.calificaciones', page=calificaciones.prev_num, periodo=periodo_filtro) }}"
+        >
+          <i class="fas fa-chevron-left"></i> Anterior
+        </a>
+      </li>
+      {% endif %} {% for page_num in calificaciones.iter_pages() %} {% if
+      page_num %} {% if page_num != calificaciones.page %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('estudiante.calificaciones', page=page_num, periodo=periodo_filtro) }}"
+        >
+          {{ page_num }}
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item active">
+        <span class="page-link">{{ page_num }}</span>
+      </li>
+      {% endif %} {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
+      {% endif %} {% endfor %} {% if calificaciones.has_next %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('estudiante.calificaciones', page=calificaciones.next_num, periodo=periodo_filtro) }}"
+        >
+          Siguiente <i class="fas fa-chevron-right"></i>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %} {% else %}
+  <!-- Sin calificaciones -->
+  <div class="text-center py-5">
+    <div class="mb-4">
+      <i class="fas fa-chart-line text-muted" style="font-size: 4rem"></i>
+    </div>
+    <h4 class="text-muted">Sin calificaciones aún</h4>
+    <p class="text-muted">
+      {% if periodo_filtro != 'todos' %} No tienes calificaciones en este
+      periodo.
+      <a href="{{ url_for('estudiante.calificaciones', periodo='todos') }}"
+        >Ver todos los periodos</a
+      >
+      {% else %} Aún no tienes calificaciones registradas. Las calificaciones
+      aparecerán aquí cuando tus profesores evalúen tus tareas. {% endif %}
+    </p>
+    <a href="{{ url_for('estudiante.dashboard') }}" class="btn btn-primary">
+      <i class="fas fa-home me-2"></i>Volver al Dashboard
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Animación de entrada para las tarjetas
+    const cards = document.querySelectorAll(".calificacion-card");
+    cards.forEach((card, index) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(20px)";
+      setTimeout(() => {
+        card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+        card.style.opacity = "1";
+        card.style.transform = "translateY(0)";
+      }, index * 100);
+    });
+
+    // Tooltips para las notas
+    const notaBadges = document.querySelectorAll(".nota-badge");
+    notaBadges.forEach((badge) => {
+      const nota = parseFloat(badge.textContent);
+      let mensaje = "";
+      if (nota >= 4.5) mensaje = "Excelente trabajo!";
+      else if (nota >= 3.5) mensaje = "Buen trabajo!";
+      else if (nota >= 3.0) mensaje = "Aprobado - Puedes mejorar";
+      else mensaje = "Necesita mejorar";
+
+      badge.setAttribute("title", mensaje);
+      badge.setAttribute("data-bs-toggle", "tooltip");
+    });
+
+    // Inicializar tooltips de Bootstrap
+    if (typeof bootstrap !== "undefined") {
+      var tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      );
+      var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+    }
+  });
+</script>
+{% endblock %}

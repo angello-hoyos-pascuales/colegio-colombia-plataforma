@@ -1,0 +1,110 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Flask
+instance/
+.webassets-cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+*.db
+*.sqlite
+*.sqlite3
+*.log
+cookies.txt
+
+# Archivos temporales y de debugging
+temp/
+tmp/
+debug_*
+test_*
+diagnostico_*
+migrar_*
+corregir_*
+fix_*
+resumen_*
+obtener_*
+mostrar_*
+reporte_*
+normalizar_*
+agregar_*
+poblar_colegio_backup.py
+ejecutar_*.py
+iniciar_*.py
+servidor_*.py
+nuevo_servidor.py
+start_server.py
+debug_app.py
+estado_servidor.py
+reiniciar_*.py
+
+# Archivos de documentación temporal
+*.md
+!README.md
+
+# Archivos batch y scripts temporales
+*.bat
+*.txt

@@ -1,0 +1,168 @@
+{% extends "base.html" %} {% block title %}Calificar Tarea - Profesor{% endblock
+%} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-check-circle me-2"></i>
+            Calificar: {{ tarea.titulo }}
+          </h4>
+          <small class="text-muted">
+            {{ tarea.asignatura.nombre }} - {{
+            tarea.asignatura.curso.nombre_completo }}
+          </small>
+        </div>
+        <div class="card-body">
+          <!-- Información de la tarea -->
+          <div class="row mb-4">
+            <div class="col-md-8">
+              <h6>Descripción de la tarea:</h6>
+              <p class="text-muted">{{ tarea.descripcion }}</p>
+            </div>
+            <div class="col-md-4">
+              <h6>Detalles:</h6>
+              <ul class="list-unstyled">
+                <li>
+                  <strong>Fecha entrega:</strong> {{
+                  tarea.fecha_entrega.strftime('%d/%m/%Y') }}
+                </li>
+                <li><strong>Valor:</strong> {{ tarea.valor_puntos }} puntos</li>
+                <li>
+                  <strong>Entregas:</strong> {{ entregas|length }} estudiantes
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {% if entregas %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Estudiante</th>
+                  <th>Fecha Entrega</th>
+                  <th>Archivo</th>
+                  <th>Estado</th>
+                  <th>Calificación</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for entrega in entregas %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                      >
+                        {{ entrega.estudiante.nombres[0] }}{{
+                        entrega.estudiante.apellidos[0] }}
+                      </div>
+                      <div>
+                        <strong
+                          >{{ entrega.estudiante.nombre_completo }}</strong
+                        >
+                        <br />
+                        <small class="text-muted"
+                          >{{ entrega.estudiante.email }}</small
+                        >
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span
+                      class="{% if entrega.fecha_entrega > tarea.fecha_entrega %}text-danger{% else %}text-success{% endif %}"
+                    >
+                      {{ entrega.fecha_entrega.strftime('%d/%m/%Y %H:%M') }}
+                    </span>
+                    {% if entrega.fecha_entrega > tarea.fecha_entrega %}
+                    <br /><small class="text-danger">Entrega tardía</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entrega.archivo %}
+                    <a
+                      href="{{ url_for('static', filename='uploads/' + entrega.archivo) }}"
+                      target="_blank"
+                      class="btn btn-sm btn-outline-primary"
+                    >
+                      <i class="fas fa-download me-1"></i>
+                      {{ entrega.archivo.split('/')[-1] }}
+                    </a>
+                    {% else %}
+                    <span class="text-muted">Sin archivo</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entrega.calificaciones %}
+                    <span class="badge bg-success">Calificada</span>
+                    {% else %}
+                    <span class="badge bg-warning">Pendiente</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if entrega.calificaciones %} {% for calificacion in
+                    entrega.calificaciones %}
+                    <strong class="text-primary"
+                      >{{ calificacion.nota }}/5.0</strong
+                    >
+                    {% if calificacion.comentarios %}
+                    <br /><small class="text-muted"
+                      >{{ calificacion.comentarios[:50] }}...</small
+                    >
+                    {% endif %} {% endfor %} {% else %}
+                    <span class="text-muted">Sin calificar</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a
+                      href="{{ url_for('profesor.calificar_entrega', entrega_id=entrega.id) }}"
+                      class="btn btn-sm btn-primary"
+                    >
+                      <i class="fas fa-star me-1"></i>
+                      {% if entrega.calificaciones %}Editar{% else %}Calificar{%
+                      endif %}
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center">
+            <div class="alert alert-info" role="alert">
+              <i class="fas fa-info-circle me-2"></i>
+              No hay entregas para esta tarea aún.
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="mt-4">
+            <a
+              href="{{ url_for('profesor.tareas') }}"
+              class="btn btn-secondary"
+            >
+              <i class="fas fa-arrow-left me-2"></i>Volver a Tareas
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .avatar-sm {
+    width: 40px;
+    height: 40px;
+    font-size: 0.875rem;
+  }
+
+  .table td {
+    vertical-align: middle;
+  }
+</style>
+{% endblock %}

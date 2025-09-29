@@ -1,0 +1,403 @@
+{% extends "base.html" %} {% block title %}Gestión de Cursos - Administrador{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="fas fa-school text-primary me-2"></i>
+      Gestión de Cursos
+    </h1>
+    <div>
+      <a href="{{ url_for('admin.nuevo_curso') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i>Nuevo Curso
+      </a>
+      <a
+        href="{{ url_for('admin.dashboard') }}"
+        class="btn btn-outline-secondary"
+      >
+        <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Total Cursos</h6>
+              <h2 class="mb-0">{{ cursos|length }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-school fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Estudiantes</h6>
+              <h2 class="mb-0">
+                {% set total_estudiantes = 0 %} {% for curso in cursos %} {% set
+                total_estudiantes = total_estudiantes +
+                curso.usuarios.filter_by(rol='estudiante').count() %} {% endfor
+                %} {{ total_estudiantes }}
+              </h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-user-graduate fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Grado 6°</h6>
+              <h2 class="mb-0">
+                {{ cursos|selectattr("grado", "equalto", "6")|list|length }}
+              </h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-child fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h6 class="card-title">Grado 11°</h6>
+              <h2 class="mb-0">
+                {{ cursos|selectattr("grado", "equalto", "11")|list|length }}
+              </h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-graduation-cap fa-2x opacity-75"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Cursos -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Lista de Cursos</h5>
+    </div>
+    <div class="card-body p-0">
+      {% if cursos %}
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" id="tablaCursos">
+          <thead class="table-light">
+            <tr>
+              <th>Grado</th>
+              <th>Sección</th>
+              <th>Nombre Completo</th>
+              <th>Estudiantes</th>
+              <th>Director de Grupo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for curso in cursos %}
+            <tr>
+              <td>
+                <span class="badge bg-primary fs-6">{{ curso.grado }}°</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ curso.seccion }}</span>
+              </td>
+              <td>
+                <strong>{{ curso.nombre }}</strong>
+                <br /><small class="text-muted"
+                  >{{ curso.grado }}° Grado - Sección {{ curso.seccion }}</small
+                >
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-users text-info me-2"></i>
+                  <span class="badge bg-info"
+                    >{{ curso.usuarios.filter_by(rol='estudiante').count() }}
+                    estudiantes</span
+                  >
+                </div>
+              </td>
+              <td>
+                {% if curso.director_grupo %}
+                <div class="d-flex align-items-center">
+                  <div
+                    class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                    style="width: 32px; height: 32px"
+                  >
+                    <i class="fas fa-chalkboard-teacher"></i>
+                  </div>
+                  <div>
+                    <strong
+                      >{{ curso.director_grupo.nombre }} {{
+                      curso.director_grupo.apellido }}</strong
+                    >
+                    <br /><small class="text-muted"
+                      >{{ curso.director_grupo.email }}</small
+                    >
+                  </div>
+                </div>
+                {% else %}
+                <span class="text-muted">
+                  <i class="fas fa-user-slash me-1"></i>Sin asignar
+                </span>
+                {% endif %}
+              </td>
+              <td>
+                {% if curso.activo %}
+                <span class="badge bg-success">
+                  <i class="fas fa-check-circle me-1"></i>Activo
+                </span>
+                {% else %}
+                <span class="badge bg-warning">
+                  <i class="fas fa-pause-circle me-1"></i>Inactivo
+                </span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button
+                    class="btn btn-outline-info"
+                    data-bs-toggle="modal"
+                    data-bs-target="#verCursoModal{{ curso.id }}"
+                    title="Ver detalles"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <a
+                    href="{{ url_for('admin.editar_curso', id=curso.id) }}"
+                    class="btn btn-outline-warning"
+                    title="Editar"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </a>
+                  <button
+                    class="btn btn-outline-success"
+                    onclick="verEstudiantes({{ curso.id }}, '{{ curso.nombre }}')"
+                    title="Ver estudiantes"
+                  >
+                    <i class="fas fa-users"></i>
+                  </button>
+                  <button
+                    class="btn btn-outline-danger"
+                    onclick="confirmarEliminacion({{ curso.id }}, '{{ curso.nombre }}')"
+                    title="Eliminar"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <i class="fas fa-school fa-3x text-muted mb-3"></i>
+        <h5>No hay cursos registrados</h5>
+        <p class="text-muted">Comienza creando tu primer curso</p>
+        <a href="{{ url_for('admin.nuevo_curso') }}" class="btn btn-primary">
+          <i class="fas fa-plus me-1"></i>Crear Curso
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modales para Ver Detalles -->
+{% for curso in cursos %}
+<div class="modal fade" id="verCursoModal{{ curso.id }}" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-school me-2"></i>
+          {{ curso.nombre }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Grado:</strong><br />
+            <span class="badge bg-primary fs-6">{{ curso.grado }}°</span>
+          </div>
+          <div class="col-md-6">
+            <strong>Sección:</strong><br />
+            <span class="badge bg-secondary fs-6">{{ curso.seccion }}</span>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Total Estudiantes:</strong><br />
+            <span class="badge bg-info"
+              >{{ curso.usuarios.filter_by(rol='estudiante').count() }}
+              estudiantes</span
+            >
+          </div>
+          <div class="col-md-6">
+            <strong>Estado:</strong><br />
+            {% if curso.activo %}
+            <span class="badge bg-success">Activo</span>
+            {% else %}
+            <span class="badge bg-warning">Inactivo</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if curso.director_grupo %}
+        <div class="mb-3">
+          <strong>Director de Grupo:</strong><br />
+          <div class="d-flex align-items-center mt-2">
+            <div
+              class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+              style="width: 40px; height: 40px"
+            >
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <div>
+              <strong
+                >{{ curso.director_grupo.nombre }} {{
+                curso.director_grupo.apellido }}</strong
+              >
+              <br /><small class="text-muted"
+                >{{ curso.director_grupo.email }}</small
+              >
+            </div>
+          </div>
+        </div>
+        {% set estudiantes_curso =
+        curso.usuarios.filter_by(rol='estudiante').all() %} {% if
+        estudiantes_curso %}
+        <div class="mb-3">
+          <strong>Estudiantes del Curso:</strong>
+          <div class="mt-2 max-height-200 overflow-auto">
+            {% for estudiante in estudiantes_curso %}
+            <div class="d-flex align-items-center mb-2">
+              <div
+                class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                style="width: 32px; height: 32px"
+              >
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <div>
+                <small
+                  ><strong
+                    >{{ estudiante.nombre }} {{ estudiante.apellido }}</strong
+                  ></small
+                >
+                <br /><small class="text-muted">{{ estudiante.email }}</small>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cerrar
+        </button>
+        <a
+          href="{{ url_for('admin.editar_curso', id=curso.id) }}"
+          class="btn btn-primary"
+        >
+          <i class="fas fa-edit me-1"></i>Editar Curso
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="confirmarEliminacionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Está seguro de que desea eliminar el curso
+          <strong id="nombreCursoEliminar"></strong>?
+        </p>
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Esta acción eliminará también todas las asignaturas y tareas
+          asociadas.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <form method="POST" id="formEliminarCurso" style="display: inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-1"></i>Eliminar Curso
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Función para confirmar eliminación
+  function confirmarEliminacion(id, nombre) {
+    document.getElementById("nombreCursoEliminar").textContent = nombre;
+    document.getElementById("formEliminarCurso").action =
+      "/admin/cursos/" + id + "/eliminar";
+    new bootstrap.Modal(
+      document.getElementById("confirmarEliminacionModal")
+    ).show();
+  }
+
+  // Función para ver estudiantes
+  function verEstudiantes(id, nombre) {
+    // Aquí podrías redirigir a una página específica de estudiantes del curso
+    window.location.href = "/admin/usuarios?curso=" + id;
+  }
+
+  // Estilo para scroll en modales
+  document.addEventListener("DOMContentLoaded", function () {
+    const style = document.createElement("style");
+    style.textContent = ".max-height-200 { max-height: 200px; }";
+    document.head.appendChild(style);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends "base.html" %} {% block title %}Mis Estudiantes - Profesor{% endblock
+%} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-users me-2"></i>
+          Mis Estudiantes
+        </h2>
+        <div class="btn-group" role="group">
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            onclick="exportarEstudiantes()"
+          >
+            <i class="fas fa-download me-2"></i>Exportar Lista
+          </button>
+        </div>
+      </div>
+
+      {% if estudiantes %}
+      <!-- Filtros -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <label for="filtro-curso" class="form-label"
+                >Filtrar por Curso:</label
+              >
+              <select id="filtro-curso" class="form-select">
+                <option value="">Todos los cursos</option>
+                {% for curso in cursos_profesor %}
+                <option value="{{ curso }}">{{ curso }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="buscar-estudiante" class="form-label"
+                >Buscar Estudiante:</label
+              >
+              <input
+                type="text"
+                id="buscar-estudiante"
+                class="form-control"
+                placeholder="Nombre o email..."
+              />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="limpiarFiltros()"
+              >
+                <i class="fas fa-eraser me-2"></i>Limpiar Filtros
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de estudiantes -->
+      <div class="row" id="lista-estudiantes">
+        {% for estudiante, curso_info in estudiantes %}
+        <div
+          class="col-md-6 col-lg-4 mb-4 estudiante-card"
+          data-curso="{{ curso_info.curso }}"
+          data-nombre="{{ estudiante.nombre_completo.lower() }}"
+          data-email="{{ estudiante.email.lower() }}"
+        >
+          <div class="card h-100">
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
+              <div class="d-flex align-items-center">
+                <div
+                  class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2"
+                >
+                  {{ estudiante.nombres[0] }}{{ estudiante.apellidos[0] }}
+                </div>
+                <div>
+                  <h6 class="mb-0">{{ estudiante.nombre_completo }}</h6>
+                  <small class="text-muted">{{ curso_info.curso }}</small>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text">
+                <small class="text-muted">
+                  <i class="fas fa-envelope me-1"></i>
+                  {{ estudiante.email }}
+                </small>
+              </p>
+              <p class="card-text">
+                <small class="text-muted">
+                  <i class="fas fa-book me-1"></i>
+                  Asignaturas: {{ curso_info.asignaturas|join(', ') }}
+                </small>
+              </p>
+
+              <!-- Estadísticas del estudiante -->
+              <div class="row text-center mt-3">
+                <div class="col-4">
+                  <div class="border-end">
+                    <h6 class="mb-0 text-primary">
+                      {{ curso_info.tareas_entregadas }}
+                    </h6>
+                    <small class="text-muted">Tareas</small>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="border-end">
+                    <h6 class="mb-0 text-success">
+                      {{ curso_info.promedio|round(1) }}
+                    </h6>
+                    <small class="text-muted">Promedio</small>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <h6 class="mb-0 text-info">
+                    {{ curso_info.calificaciones }}
+                  </h6>
+                  <small class="text-muted">Calific.</small>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="btn-group w-100" role="group">
+                <a
+                  href="{{ url_for('profesor.ver_calificaciones_estudiante', estudiante_id=estudiante.id) }}"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  <i class="fas fa-chart-line me-1"></i>Notas
+                </a>
+                <a
+                  href="{{ url_for('profesor.contactar_estudiante', estudiante_id=estudiante.id) }}"
+                  class="btn btn-outline-secondary btn-sm"
+                >
+                  <i class="fas fa-envelope me-1"></i>Contactar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Mensaje si no hay resultados en filtro -->
+      <div id="sin-resultados" class="text-center d-none">
+        <div class="alert alert-info" role="alert">
+          <i class="fas fa-search me-2"></i>
+          No se encontraron estudiantes con los filtros aplicados.
+        </div>
+      </div>
+      {% else %}
+      <div class="text-center">
+        <div class="alert alert-info" role="alert">
+          <i class="fas fa-info-circle me-2"></i>
+          No tienes estudiantes asignados aún.
+          <br />
+          <small class="text-muted"
+            >Los estudiantes aparecerán aquí cuando tengas asignaturas
+            asignadas.</small
+          >
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  .avatar {
+    width: 45px;
+    height: 45px;
+    font-size: 1rem;
+  }
+
+  .card {
+    transition: transform 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+
+  .border-end {
+    border-right: 1px solid #dee2e6;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const filtroCurso = document.getElementById("filtro-curso");
+    const buscarEstudiante = document.getElementById("buscar-estudiante");
+    const estudianteCards = document.querySelectorAll(".estudiante-card");
+    const sinResultados = document.getElementById("sin-resultados");
+
+    function filtrarEstudiantes() {
+      const cursoSeleccionado = filtroCurso?.value.toLowerCase() || "";
+      const textoBusqueda = buscarEstudiante?.value.toLowerCase() || "";
+      let estudiantesVisibles = 0;
+
+      estudianteCards.forEach((card) => {
+        const curso = card.dataset.curso.toLowerCase();
+        const nombre = card.dataset.nombre;
+        const email = card.dataset.email;
+
+        const cumpleCurso =
+          !cursoSeleccionado || curso.includes(cursoSeleccionado);
+        const cumpleBusqueda =
+          !textoBusqueda ||
+          nombre.includes(textoBusqueda) ||
+          email.includes(textoBusqueda);
+
+        if (cumpleCurso && cumpleBusqueda) {
+          card.style.display = "block";
+          estudiantesVisibles++;
+        } else {
+          card.style.display = "none";
+        }
+      });
+
+      // Mostrar/ocultar mensaje de sin resultados
+      if (sinResultados) {
+        if (estudiantesVisibles === 0 && estudianteCards.length > 0) {
+          sinResultados.classList.remove("d-none");
+        } else {
+          sinResultados.classList.add("d-none");
+        }
+      }
+    }
+
+    // Event listeners para filtros
+    if (filtroCurso) {
+      filtroCurso.addEventListener("change", filtrarEstudiantes);
+    }
+
+    if (buscarEstudiante) {
+      buscarEstudiante.addEventListener("input", filtrarEstudiantes);
+    }
+  });
+
+  function limpiarFiltros() {
+    const filtroCurso = document.getElementById("filtro-curso");
+    const buscarEstudiante = document.getElementById("buscar-estudiante");
+
+    if (filtroCurso) filtroCurso.value = "";
+    if (buscarEstudiante) buscarEstudiante.value = "";
+
+    // Mostrar todos los estudiantes
+    document.querySelectorAll(".estudiante-card").forEach((card) => {
+      card.style.display = "block";
+    });
+
+    document.getElementById("sin-resultados")?.classList.add("d-none");
+  }
+
+  function exportarEstudiantes() {
+    // Implementación básica de exportación
+    const estudiantesVisibles = Array.from(
+      document.querySelectorAll(".estudiante-card")
+    )
+      .filter((card) => card.style.display !== "none")
+      .map((card) => {
+        const nombre = card.querySelector("h6").textContent;
+        const email = card
+          .querySelector(".fa-envelope")
+          .parentElement.textContent.trim();
+        const curso = card.dataset.curso;
+        return `${nombre},${email},${curso}`;
+      });
+
+    const csv = "Nombre,Email,Curso\n" + estudiantesVisibles.join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mis_estudiantes.csv";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+</script>
+{% endblock %}

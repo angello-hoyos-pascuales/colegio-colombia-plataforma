@@ -1,0 +1,309 @@
+{% extends "base.html" %} {% block title %}Notificaciones - Profesor{% endblock
+%} {% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+          <i class="fas fa-bell me-2"></i>
+          Notificaciones {% if notificaciones %}
+          <span class="badge bg-primary">{{ notificaciones|length }}</span>
+          {% endif %}
+        </h2>
+        {% if notificaciones %}
+        <div class="btn-group" role="group">
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            onclick="marcarTodasLeidas()"
+          >
+            <i class="fas fa-check-double me-2"></i>Marcar Todas como Leídas
+          </button>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if notificaciones %}
+      <div class="row">
+        {% for notificacion in notificaciones %}
+        <div class="col-12 mb-3">
+          <div
+            class="card {% if not notificacion.leida %}border-primary{% endif %}"
+          >
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
+              <div class="d-flex align-items-center">
+                <div class="me-3">
+                  {% if notificacion.tipo == 'reemplazo' %}
+                  <i class="fas fa-user-clock text-warning fa-lg"></i>
+                  {% elif notificacion.tipo == 'tarea' %}
+                  <i class="fas fa-tasks text-info fa-lg"></i>
+                  {% elif notificacion.tipo == 'sistema' %}
+                  <i class="fas fa-cog text-secondary fa-lg"></i>
+                  {% else %}
+                  <i class="fas fa-bell text-primary fa-lg"></i>
+                  {% endif %}
+                </div>
+                <div>
+                  <h6 class="mb-0">
+                    {% if notificacion.tipo == 'reemplazo' %} Solicitud de
+                    Reemplazo {% elif notificacion.tipo == 'tarea' %}
+                    Notificación de Tarea {% elif notificacion.tipo == 'sistema'
+                    %} Notificación del Sistema {% else %} Notificación {% endif
+                    %} {% if not notificacion.leida %}
+                    <span class="badge bg-primary ms-2">Nuevo</span>
+                    {% endif %}
+                  </h6>
+                  <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    {{ notificacion.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                  </small>
+                </div>
+              </div>
+              <div class="dropdown">
+                <button
+                  class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  {% if not notificacion.leida %}
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="marcarLeida({{ notificacion.id }})"
+                    >
+                      <i class="fas fa-check me-2"></i>Marcar como Leída
+                    </a>
+                  </li>
+                  {% endif %}
+                  <li>
+                    <a
+                      class="dropdown-item text-danger"
+                      href="#"
+                      onclick="eliminarNotificacion({{ notificacion.id }})"
+                    >
+                      <i class="fas fa-trash me-2"></i>Eliminar
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text">{{ notificacion.mensaje }}</p>
+
+              {% if notificacion.tipo == 'reemplazo' and
+              notificacion.profesor_ausente %}
+              <div class="alert alert-warning" role="alert">
+                <strong>Profesor Ausente:</strong> {{
+                notificacion.profesor_ausente.nombre_completo }}
+                <br />
+                <strong>Curso:</strong> {{ notificacion.curso_afectado }}
+                <br />
+                <strong>Fecha:</strong> {{
+                notificacion.fecha_ausencia.strftime('%d/%m/%Y') if
+                notificacion.fecha_ausencia else 'No especificada' }}
+              </div>
+
+              {% if notificacion.estado == 'pendiente' %}
+              <div class="mt-3">
+                <a
+                  href="{{ url_for('profesor.responder_reemplazo', notificacion_id=notificacion.id) }}"
+                  class="btn btn-primary me-2"
+                >
+                  <i class="fas fa-reply me-2"></i>Responder
+                </a>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  onclick="declinarReemplazo({{ notificacion.id }})"
+                >
+                  <i class="fas fa-times me-2"></i>Declinar
+                </button>
+              </div>
+              {% elif notificacion.estado == 'aceptada' %}
+              <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                Has aceptado esta solicitud de reemplazo.
+              </div>
+              {% elif notificacion.estado == 'declinada' %}
+              <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                Has declinado esta solicitud de reemplazo.
+              </div>
+              {% endif %} {% endif %} {% if notificacion.tipo == 'tarea' and
+              notificacion.tarea_relacionada %}
+              <div class="mt-3">
+                <a
+                  href="{{ url_for('profesor.ver_tarea', tarea_id=notificacion.tarea_relacionada.id) }}"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  <i class="fas fa-eye me-2"></i>Ver Tarea
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Paginación si es necesaria -->
+      {% if notificaciones.pages > 1 %}
+      <nav aria-label="Paginación de notificaciones">
+        <ul class="pagination justify-content-center">
+          {% if notificaciones.has_prev %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="{{ url_for('profesor.notificaciones', page=notificaciones.prev_num) }}"
+            >
+              <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+          </li>
+          {% endif %} {% for page_num in notificaciones.iter_pages() %} {% if
+          page_num %} {% if page_num != notificaciones.page %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="{{ url_for('profesor.notificaciones', page=page_num) }}"
+              >{{ page_num }}</a
+            >
+          </li>
+          {% else %}
+          <li class="page-item active">
+            <span class="page-link">{{ page_num }}</span>
+          </li>
+          {% endif %} {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">...</span>
+          </li>
+          {% endif %} {% endfor %} {% if notificaciones.has_next %}
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="{{ url_for('profesor.notificaciones', page=notificaciones.next_num) }}"
+            >
+              Siguiente <i class="fas fa-chevron-right"></i>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %} {% else %}
+      <div class="text-center">
+        <div class="alert alert-info" role="alert">
+          <i class="fas fa-bell-slash fa-3x mb-3 text-muted"></i>
+          <h5>No tienes notificaciones</h5>
+          <p class="mb-0">Las notificaciones importantes aparecerán aquí.</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  function marcarLeida(notificacionId) {
+    fetch(`/profesor/notificacion/${notificacionId}/marcar-leida`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert("Error al marcar la notificación como leída");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Error al procesar la solicitud");
+      });
+  }
+
+  function marcarTodasLeidas() {
+    if (confirm("¿Marcar todas las notificaciones como leídas?")) {
+      fetch("/profesor/notificaciones/marcar-todas-leidas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Error al marcar las notificaciones como leídas");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Error al procesar la solicitud");
+        });
+    }
+  }
+
+  function eliminarNotificacion(notificacionId) {
+    if (confirm("¿Estás seguro de que quieres eliminar esta notificación?")) {
+      fetch(`/profesor/notificacion/${notificacionId}/eliminar`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Error al eliminar la notificación");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Error al procesar la solicitud");
+        });
+    }
+  }
+
+  function declinarReemplazo(notificacionId) {
+    if (
+      confirm(
+        "¿Estás seguro de que quieres declinar esta solicitud de reemplazo?"
+      )
+    ) {
+      fetch(`/profesor/reemplazo/${notificacionId}/declinar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert("Error al declinar la solicitud");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Error al procesar la solicitud");
+        });
+    }
+  }
+</script>
+{% endblock %}

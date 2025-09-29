@@ -1,0 +1,253 @@
+{% extends "base.html" %} {% block title %}{{ title }} - Administrador{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+      <i class="fas fa-school text-primary me-2"></i>
+      {{ title }}
+    </h1>
+    <div>
+      <a href="{{ url_for('admin.cursos') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Volver a Cursos
+      </a>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-school me-2"></i>
+            Información del Curso
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Información Básica del Curso -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="fas fa-info-circle me-2"></i>Información Básica
+                </h6>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                {{ form.grado.label(class="form-label") }} {{
+                form.grado(class="form-select" + (" is-invalid" if
+                form.grado.errors else ""), onchange="actualizarNombre()") }} {%
+                if form.grado.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.grado.errors %}
+                  <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Selecciona el grado escolar
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                {{ form.seccion.label(class="form-label") }} {{
+                form.seccion(class="form-select" + (" is-invalid" if
+                form.seccion.errors else ""), onchange="actualizarNombre()") }}
+                {% if form.seccion.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.seccion.errors %}
+                  <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Selecciona la sección del grado
+                </div>
+              </div>
+            </div>
+
+            <!-- Nombre del Curso -->
+            <div class="row mb-4">
+              <div class="col-12 mb-3">
+                {{ form.nombre.label(class="form-label") }} {{
+                form.nombre(class="form-control" + (" is-invalid" if
+                form.nombre.errors else ""), readonly=True) }} {% if
+                form.nombre.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.nombre.errors %}
+                  <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                <div class="form-text">
+                  <i class="fas fa-magic me-1"></i>
+                  El nombre se genera automáticamente según el grado y sección
+                </div>
+              </div>
+            </div>
+
+            <!-- Director de Grupo -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="fas fa-chalkboard-teacher me-2"></i>Director de
+                  Grupo
+                </h6>
+              </div>
+
+              <div class="col-12 mb-3">
+                {% if form.director_grupo %} {{
+                form.director_grupo.label(class="form-label") }} {{
+                form.director_grupo(class="form-select" + (" is-invalid" if
+                form.director_grupo.errors else "")) }} {% if
+                form.director_grupo.errors %}
+                <div class="invalid-feedback">
+                  {% for error in form.director_grupo.errors %}
+                  <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %} {% endif %}
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Selecciona un profesor para ser director de grupo (opcional)
+                </div>
+              </div>
+            </div>
+
+            <!-- Vista Previa -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="fas fa-eye me-2"></i>Vista Previa
+                </h6>
+              </div>
+              <div class="col-12">
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                        style="width: 50px; height: 50px"
+                      >
+                        <i class="fas fa-school"></i>
+                      </div>
+                      <div>
+                        <h5 class="mb-1" id="preview-nombre">
+                          Selecciona grado y sección
+                        </h5>
+                        <p class="mb-0 text-muted">
+                          <span id="preview-grado">-</span>° Grado - Sección
+                          <span id="preview-seccion">-</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estado del Curso -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary mb-3">
+                  <i class="fas fa-toggle-on me-2"></i>Estado
+                </h6>
+              </div>
+
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  {{ form.activo(class="form-check-input") }} {{
+                  form.activo.label(class="form-check-label") }}
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Los cursos inactivos no aparecerán en las opciones de
+                  matrícula
+                </div>
+              </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="alert alert-info">
+              <i class="fas fa-lightbulb me-2"></i>
+              <strong>Información:</strong>
+              <ul class="mb-0 mt-2">
+                <li>
+                  El sistema admite grados de 6° a 11° con secciones A y B
+                </li>
+                <li>Cada curso puede tener un director de grupo asignado</li>
+                <li>
+                  Los estudiantes se asignan al curso durante la creación de
+                  usuarios
+                </li>
+                <li>Un profesor puede ser director de varios cursos</li>
+              </ul>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex justify-content-end gap-2">
+              <a
+                href="{{ url_for('admin.cursos') }}"
+                class="btn btn-outline-secondary"
+              >
+                <i class="fas fa-times me-1"></i>Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i>{{ title }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Función para actualizar el nombre automáticamente
+  function actualizarNombre() {
+    const gradoSelect = document.querySelector('[name="grado"]');
+    const seccionSelect = document.querySelector('[name="seccion"]');
+    const nombreInput = document.querySelector('[name="nombre"]');
+    const previewNombre = document.getElementById("preview-nombre");
+    const previewGrado = document.getElementById("preview-grado");
+    const previewSeccion = document.getElementById("preview-seccion");
+
+    const grado = gradoSelect.value;
+    const seccion = seccionSelect.value;
+
+    if (grado && seccion) {
+      const nombre = `${grado}° ${seccion}`;
+      nombreInput.value = nombre;
+      previewNombre.textContent = nombre;
+      previewGrado.textContent = grado;
+      previewSeccion.textContent = seccion;
+    } else {
+      nombreInput.value = "";
+      previewNombre.textContent = "Selecciona grado y sección";
+      previewGrado.textContent = "-";
+      previewSeccion.textContent = "-";
+    }
+  }
+
+  // Ejecutar al cargar la página
+  document.addEventListener("DOMContentLoaded", function () {
+    actualizarNombre();
+  });
+
+  // Validación en tiempo real
+  document.querySelector("form").addEventListener("submit", function (e) {
+    const grado = document.querySelector('[name="grado"]').value;
+    const seccion = document.querySelector('[name="seccion"]').value;
+
+    if (!grado || !seccion) {
+      e.preventDefault();
+      alert("Por favor selecciona tanto el grado como la sección del curso.");
+      return false;
+    }
+  });
+</script>
+{% endblock %}

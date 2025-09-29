@@ -1,0 +1,472 @@
+{% extends "base.html" %} {% block title %}Mi Perfil - Estudiante{% endblock %}
+{% block extra_css %}
+<style>
+  .perfil-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .perfil-card {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    transition: transform 0.2s ease-in-out;
+  }
+  .perfil-card:hover {
+    transform: translateY(-2px);
+  }
+  .avatar-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+  }
+  .avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
+    border: 5px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  .info-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .info-item {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid #dee2e6;
+  }
+  .info-item:last-child {
+    border-bottom: none;
+  }
+  .info-label {
+    font-weight: bold;
+    color: #495057;
+    margin-bottom: 0.2rem;
+  }
+  .info-value {
+    color: #6c757d;
+    margin-bottom: 0;
+  }
+  .stats-card {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .stats-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  .stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+  .badge-custom {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+  }
+  .change-password-form {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid #dee2e6;
+  }
+  .activity-item {
+    padding: 1rem;
+    border-left: 4px solid #007bff;
+    background: #f8f9fa;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+  }
+  .activity-date {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="perfil-header text-center">
+    <div class="avatar-container">
+      <div class="avatar">
+        <i class="fas fa-user"></i>
+      </div>
+    </div>
+    <h2 class="mt-3 mb-1">{{ current_user.nombre_completo }}</h2>
+    <p class="mb-0 opacity-75">
+      <i class="fas fa-graduation-cap me-2"></i>Estudiante - {{
+      current_user.curso.nombre }} {{ current_user.curso.seccion }}
+    </p>
+  </div>
+
+  <!-- Navegación -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('estudiante.dashboard') }}">Dashboard</a>
+      </li>
+      <li class="breadcrumb-item active">Mi Perfil</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <!-- Información personal -->
+    <div class="col-lg-8">
+      <div class="perfil-card card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-user me-2"></i>Información Personal
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="info-item">
+                <div class="info-label">Nombre Completo</div>
+                <div class="info-value">{{ current_user.nombre_completo }}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Documento de Identidad</div>
+                <div class="info-value">
+                  {{ current_user.tipo_documento }} {{
+                  current_user.numero_documento }}
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Correo Electrónico</div>
+                <div class="info-value">{{ current_user.email }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <div class="info-label">Fecha de Nacimiento</div>
+                <div class="info-value">
+                  {% if current_user.fecha_nacimiento %} {{
+                  current_user.fecha_nacimiento.strftime('%d de %B de %Y') }} {%
+                  else %} No registrada {% endif %}
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Teléfono</div>
+                <div class="info-value">
+                  {{ current_user.telefono or 'No registrado' }}
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Estado</div>
+                <div class="info-value">
+                  {% if current_user.activo %}
+                  <span class="badge badge-custom bg-success">Activo</span>
+                  {% else %}
+                  <span class="badge badge-custom bg-danger">Inactivo</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información académica -->
+      <div class="perfil-card card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-graduation-cap me-2"></i>Información Académica
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="info-item">
+                <div class="info-label">Curso</div>
+                <div class="info-value">{{ current_user.curso.nombre }}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Sección</div>
+                <div class="info-value">{{ current_user.curso.seccion }}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Año Lectivo</div>
+                <div class="info-value">{{ current_user.curso.año }}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-item">
+                <div class="info-label">Director de Grupo</div>
+                <div class="info-value">
+                  {% if current_user.curso.director_grupo %} {{
+                  current_user.curso.director_grupo.nombre_completo }} {% else
+                  %} No asignado {% endif %}
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Fecha de Registro</div>
+                <div class="info-value">
+                  {{ current_user.fecha_registro.strftime('%d de %B de %Y') }}
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Código Estudiantil</div>
+                <div class="info-value">
+                  EST-{{ current_user.id|string.zfill(6) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cambiar contraseña -->
+      <div class="perfil-card card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if change_password_form %}
+          <form method="POST" action="{{ url_for('estudiante.perfil') }}">
+            {{ change_password_form.hidden_tag() }}
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                {{
+                change_password_form.password_actual.label(class="form-label")
+                }} {{ change_password_form.password_actual(class="form-control")
+                }} {% if change_password_form.password_actual.errors %}
+                <div class="text-danger mt-1">
+                  {% for error in change_password_form.password_actual.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-md-4 mb-3">
+                {{ change_password_form.password_nuevo.label(class="form-label")
+                }} {{ change_password_form.password_nuevo(class="form-control")
+                }} {% if change_password_form.password_nuevo.errors %}
+                <div class="text-danger mt-1">
+                  {% for error in change_password_form.password_nuevo.errors %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+              <div class="col-md-4 mb-3">
+                {{
+                change_password_form.confirmar_password.label(class="form-label")
+                }} {{
+                change_password_form.confirmar_password(class="form-control") }}
+                {% if change_password_form.confirmar_password.errors %}
+                <div class="text-danger mt-1">
+                  {% for error in change_password_form.confirmar_password.errors
+                  %}
+                  <small>{{ error }}</small>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-2"></i>Cambiar Contraseña
+            </button>
+          </form>
+          {% else %}
+          <p class="text-muted">
+            Formulario de cambio de contraseña no disponible.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-lg-4">
+      <!-- Estadísticas -->
+      <div class="stats-card">
+        <div class="stats-number">{{ total_tareas or 0 }}</div>
+        <div class="stats-label">Tareas Asignadas</div>
+      </div>
+
+      <div
+        class="stats-card"
+        style="background: linear-gradient(45deg, #007bff, #0056b3)"
+      >
+        <div class="stats-number">{{ tareas_entregadas or 0 }}</div>
+        <div class="stats-label">Tareas Entregadas</div>
+      </div>
+
+      <div
+        class="stats-card"
+        style="background: linear-gradient(45deg, #ffc107, #fd7e14)"
+      >
+        <div class="stats-number">{{ promedio_general or 'N/A' }}</div>
+        <div class="stats-label">Promedio General</div>
+      </div>
+
+      <!-- Actividad reciente -->
+      <div class="perfil-card card">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-history me-2"></i>Actividad Reciente
+          </h6>
+        </div>
+        <div class="card-body">
+          {% if actividad_reciente %} {% for actividad in actividad_reciente %}
+          <div class="activity-item">
+            <div class="activity-date">
+              {{ actividad.fecha.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            <div>{{ actividad.descripcion }}</div>
+          </div>
+          {% endfor %} {% else %}
+          <p class="text-muted mb-0">No hay actividad reciente registrada.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Información del sistema -->
+      <div class="info-section">
+        <h6 class="mb-3">
+          <i class="fas fa-info-circle me-2"></i>Información del Sistema
+        </h6>
+        <div class="info-item">
+          <div class="info-label">Último acceso</div>
+          <div class="info-value">
+            {% if current_user.ultimo_acceso %} {{
+            current_user.ultimo_acceso.strftime('%d/%m/%Y %H:%M') }} {% else %}
+            Primer acceso {% endif %}
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Sesiones activas</div>
+          <div class="info-value">1</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Plataforma</div>
+          <div class="info-value">Colegio Colombia v1.0</div>
+        </div>
+      </div>
+
+      <!-- Accesos rápidos -->
+      <div class="perfil-card card">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-rocket me-2"></i>Accesos Rápidos
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a
+              href="{{ url_for('estudiante.tareas') }}"
+              class="btn btn-outline-primary btn-sm"
+            >
+              <i class="fas fa-tasks me-2"></i>Mis Tareas
+            </a>
+            <a
+              href="{{ url_for('estudiante.calificaciones') }}"
+              class="btn btn-outline-success btn-sm"
+            >
+              <i class="fas fa-chart-line me-2"></i>Mis Calificaciones
+            </a>
+            <a
+              href="{{ url_for('estudiante.horario') }}"
+              class="btn btn-outline-info btn-sm"
+            >
+              <i class="fas fa-calendar-alt me-2"></i>Mi Horario
+            </a>
+            <a
+              href="{{ url_for('main.logout') }}"
+              class="btn btn-outline-danger btn-sm"
+            >
+              <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Animación de entrada para las tarjetas
+    const cards = document.querySelectorAll(
+      ".perfil-card, .stats-card, .info-section"
+    );
+    cards.forEach((card, index) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(20px)";
+      setTimeout(() => {
+        card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+        card.style.opacity = "1";
+        card.style.transform = "translateY(0)";
+      }, index * 100);
+    });
+
+    // Validación del formulario de cambio de contraseña
+    const passwordForm = document.querySelector("form");
+    if (passwordForm) {
+      passwordForm.addEventListener("submit", function (e) {
+        const newPassword = document.querySelector(
+          '[name="password_nuevo"]'
+        ).value;
+        const confirmPassword = document.querySelector(
+          '[name="confirmar_password"]'
+        ).value;
+
+        if (newPassword !== confirmPassword) {
+          e.preventDefault();
+          alert(
+            "Las contraseñas no coinciden. Por favor, verifica e intenta de nuevo."
+          );
+          return false;
+        }
+
+        if (newPassword.length < 6) {
+          e.preventDefault();
+          alert("La nueva contraseña debe tener al menos 6 caracteres.");
+          return false;
+        }
+      });
+    }
+
+    // Copiar código estudiantil al hacer clic
+    const codigoElement = document.querySelector(
+      '.info-value:contains("EST-")'
+    );
+    if (codigoElement) {
+      codigoElement.style.cursor = "pointer";
+      codigoElement.title = "Clic para copiar";
+      codigoElement.addEventListener("click", function () {
+        navigator.clipboard.writeText(this.textContent).then(function () {
+          // Mostrar feedback visual
+          const original = codigoElement.textContent;
+          codigoElement.textContent = "¡Copiado!";
+          codigoElement.style.color = "#28a745";
+          setTimeout(() => {
+            codigoElement.textContent = original;
+            codigoElement.style.color = "";
+          }, 1500);
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

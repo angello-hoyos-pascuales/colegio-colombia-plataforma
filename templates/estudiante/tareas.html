@@ -1,0 +1,340 @@
+{% extends "base.html" %} {% block title %}Mis Tareas - Estudiante{% endblock %}
+{% block extra_css %}
+<style>
+  .tarea-card {
+    transition: transform 0.2s ease-in-out;
+    border-left: 4px solid #007bff;
+  }
+  .tarea-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  .estado-badge {
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+  }
+  .pendiente {
+    background: linear-gradient(45deg, #ffc107, #fd7e14);
+  }
+  .entregada {
+    background: linear-gradient(45deg, #28a745, #20c997);
+  }
+  .vencida {
+    background: linear-gradient(45deg, #dc3545, #e83e8c);
+  }
+  .estudiante-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  .filter-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+  }
+  .urgente {
+    border-left-color: #dc3545 !important;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container-fluid py-4">
+  <!-- Header del estudiante -->
+  <div class="estudiante-header text-center">
+    <div class="row align-items-center">
+      <div class="col-md-2">
+        <div
+          class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center"
+          style="width: 80px; height: 80px"
+        >
+          <i class="fas fa-tasks text-primary" style="font-size: 2rem"></i>
+        </div>
+      </div>
+      <div class="col-md-10 text-md-start">
+        <h2 class="mb-1">Mis Tareas</h2>
+        <p class="mb-0 opacity-75">
+          <i class="fas fa-user me-2"></i>{{ current_user.nombre_completo }}
+          <span class="mx-3">|</span>
+          <i class="fas fa-tasks me-2"></i>Gestión de tareas y entregas
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('estudiante.dashboard') }}">Dashboard</a>
+        </li>
+        <li class="breadcrumb-item active">Mis Tareas</li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filter-card">
+    <h6 class="mb-3"><i class="fas fa-filter me-2"></i>Filtrar Tareas</h6>
+    <div class="btn-group" role="group">
+      <a
+        href="{{ url_for('estudiante.tareas', estado='todas') }}"
+        class="btn {% if estado_filtro == 'todas' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+      >
+        Todas
+      </a>
+      <a
+        href="{{ url_for('estudiante.tareas', estado='pendientes') }}"
+        class="btn {% if estado_filtro == 'pendientes' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+      >
+        Pendientes
+      </a>
+      <a
+        href="{{ url_for('estudiante.tareas', estado='entregadas') }}"
+        class="btn {% if estado_filtro == 'entregadas' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+      >
+        Entregadas
+      </a>
+      <a
+        href="{{ url_for('estudiante.tareas', estado='vencidas') }}"
+        class="btn {% if estado_filtro == 'vencidas' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+      >
+        Vencidas
+      </a>
+    </div>
+  </div>
+
+  {% if tareas.items %}
+  <!-- Estadísticas rápidas -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">{{ tareas.total }}</h4>
+          <small>Total Tareas</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">{{ pendientes_count }}</h4>
+          <small>Pendientes</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">{{ entregadas_count }}</h4>
+          <small>Entregadas</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-danger text-white">
+        <div class="card-body text-center">
+          <h4 class="mb-0">{{ vencidas_count }}</h4>
+          <small>Vencidas</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de tareas -->
+  <div class="row">
+    {% for tarea in tareas.items %} {% set dias_restantes =
+    (tarea.fecha_vencimiento.date() - moment().date()).days if
+    tarea.fecha_vencimiento else None %}
+    <div class="col-md-6 col-lg-4 mb-4">
+      <div
+        class="card tarea-card h-100 {% if dias_restantes and dias_restantes <= 1 %}urgente{% endif %}"
+      >
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0">{{ tarea.nombre }}</h6>
+          {% if tarea.entregada %}
+          <span class="estado-badge text-white entregada">
+            <i class="fas fa-check me-1"></i>Entregada
+          </span>
+          {% elif tarea.fecha_vencimiento and tarea.fecha_vencimiento < moment()
+          %}
+          <span class="estado-badge text-white vencida">
+            <i class="fas fa-times me-1"></i>Vencida
+          </span>
+          {% else %}
+          <span class="estado-badge text-white pendiente">
+            <i class="fas fa-clock me-1"></i>Pendiente
+          </span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div class="mb-2">
+            <small class="text-muted">Asignatura:</small>
+            <p class="mb-1 fw-bold">{{ tarea.asignatura.nombre }}</p>
+          </div>
+          <div class="mb-2">
+            <small class="text-muted">Profesor:</small>
+            <p class="mb-1">{{ tarea.asignatura.profesor.nombre_completo }}</p>
+          </div>
+          {% if tarea.descripcion %}
+          <div class="mb-2">
+            <small class="text-muted">Descripción:</small>
+            <p class="small mb-0">
+              {{ tarea.descripcion[:100] }}{% if tarea.descripcion|length > 100
+              %}...{% endif %}
+            </p>
+          </div>
+          {% endif %} {% if tarea.fecha_vencimiento %}
+          <div class="mb-2">
+            <small class="text-muted">Fecha límite:</small>
+            <p
+              class="mb-1 {% if dias_restantes and dias_restantes <= 1 %}text-danger fw-bold{% endif %}"
+            >
+              {{ tarea.fecha_vencimiento.strftime('%d/%m/%Y %H:%M') }} {% if
+              dias_restantes is not none %} {% if dias_restantes > 0 %}
+              <small class="text-muted"
+                >({{ dias_restantes }} días restantes)</small
+              >
+              {% elif dias_restantes == 0 %}
+              <small class="text-danger">(¡Vence hoy!)</small>
+              {% else %}
+              <small class="text-danger"
+                >(Vencida hace {{ -dias_restantes }} días)</small
+              >
+              {% endif %} {% endif %}
+            </p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between">
+            <a
+              href="{{ url_for('estudiante.detalle_tarea', id=tarea.id) }}"
+              class="btn btn-outline-primary btn-sm"
+            >
+              <i class="fas fa-eye me-1"></i>Ver Detalle
+            </a>
+            {% if not tarea.entregada and (not tarea.fecha_vencimiento or
+            tarea.fecha_vencimiento > moment()) %}
+            <a
+              href="{{ url_for('estudiante.entregar_tarea', id=tarea.id) }}"
+              class="btn btn-primary btn-sm"
+            >
+              <i class="fas fa-upload me-1"></i>Entregar
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Paginación -->
+  {% if tareas.pages > 1 %}
+  <nav aria-label="Navegación de tareas" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if tareas.has_prev %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('estudiante.tareas', page=tareas.prev_num, estado=estado_filtro) }}"
+        >
+          <i class="fas fa-chevron-left"></i> Anterior
+        </a>
+      </li>
+      {% endif %} {% for page_num in tareas.iter_pages() %} {% if page_num %} {%
+      if page_num != tareas.page %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('estudiante.tareas', page=page_num, estado=estado_filtro) }}"
+        >
+          {{ page_num }}
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item active">
+        <span class="page-link">{{ page_num }}</span>
+      </li>
+      {% endif %} {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
+      {% endif %} {% endfor %} {% if tareas.has_next %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_for('estudiante.tareas', page=tareas.next_num, estado=estado_filtro) }}"
+        >
+          Siguiente <i class="fas fa-chevron-right"></i>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %} {% else %}
+  <!-- Sin tareas -->
+  <div class="text-center py-5">
+    <div class="mb-4">
+      <i class="fas fa-tasks text-muted" style="font-size: 4rem"></i>
+    </div>
+    <h4 class="text-muted">Sin tareas</h4>
+    <p class="text-muted">
+      {% if estado_filtro != 'todas' %} No tienes tareas con el estado "{{
+      estado_filtro }}".
+      <a href="{{ url_for('estudiante.tareas', estado='todas') }}"
+        >Ver todas las tareas</a
+      >
+      {% else %} Aún no tienes tareas asignadas. Las tareas aparecerán aquí
+      cuando tus profesores las publiquen. {% endif %}
+    </p>
+    <a href="{{ url_for('estudiante.dashboard') }}" class="btn btn-primary">
+      <i class="fas fa-home me-2"></i>Volver al Dashboard
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Animación de entrada para las tarjetas
+    const cards = document.querySelectorAll(".tarea-card");
+    cards.forEach((card, index) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(20px)";
+      setTimeout(() => {
+        card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+        card.style.opacity = "1";
+        card.style.transform = "translateY(0)";
+      }, index * 100);
+    });
+
+    // Actualizar contadores cada minuto para tareas próximas a vencer
+    setInterval(function () {
+      const tareasUrgentes = document.querySelectorAll(".urgente");
+      tareasUrgentes.forEach((card) => {
+        card.style.animation = "pulse 2s infinite";
+      });
+    }, 60000);
+  });
+</script>
+{% endblock %}

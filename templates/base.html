@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% if title %}{{ title }} - {% endif %}{{ config.COLEGIO_NOMBRE }}
+    </title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <!-- Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/main.css') }}"
+    />
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">
+          <i class="fas fa-graduation-cap me-2"></i>{{ config.COLEGIO_NOMBRE }}
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            {% if current_user.is_authenticated %} {% if current_user.es_admin
+            %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="adminDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-cog me-1"></i>Administración
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin.usuarios') }}"
+                    >Usuarios</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('admin.cursos') }}"
+                    >Cursos</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin.asignaturas') }}"
+                    >Asignaturas</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin.horarios') }}"
+                    >Horarios</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin.reportar_ausencia') }}"
+                    >Reportar Ausencia</a
+                  >
+                </li>
+              </ul>
+            </li>
+            {% elif current_user.es_profesor %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('profesor.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('profesor.tareas') }}">
+                <i class="fas fa-tasks me-1"></i>Tareas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('profesor.estudiantes') }}">
+                <i class="fas fa-users me-1"></i>Estudiantes
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('profesor.notificaciones') }}"
+              >
+                <i class="fas fa-bell me-1"></i>Notificaciones
+              </a>
+            </li>
+            {% elif current_user.es_estudiante %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('estudiante.dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('estudiante.tareas') }}">
+                <i class="fas fa-tasks me-1"></i>Tareas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('estudiante.calificaciones') }}"
+              >
+                <i class="fas fa-chart-line me-1"></i>Calificaciones
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('estudiante.horario') }}">
+                <i class="fas fa-calendar me-1"></i>Horario
+              </a>
+            </li>
+            {% endif %} {% if current_user.es_admin or current_user.es_profesor
+            %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('horario.tiempo_real') }}">
+                <i class="fas fa-clock me-1"></i>Tiempo Real
+              </a>
+            </li>
+            {% endif %} {% endif %}
+          </ul>
+
+          <ul class="navbar-nav">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="userDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user me-1"></i>{{ current_user.nombre }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('estudiante.perfil') if current_user.es_estudiante else '#' }}"
+                  >
+                    <i class="fas fa-user-edit me-1"></i>Perfil
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('main.logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+                  </a>
+                </li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('main.login') }}">
+                <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="container mt-3">
+      {% for category, message in messages %}
+      <div
+        class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">{% block content %}{% endblock %}</main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3 mt-5">
+      <div class="container">
+        <small class="text-muted">
+          © 2023 {{ config.COLEGIO_NOMBRE }} - Plataforma Estudiantil
+        </small>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

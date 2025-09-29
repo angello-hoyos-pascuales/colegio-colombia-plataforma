@@ -1,0 +1,95 @@
+{% extends "base.html" %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white text-center">
+        <h4><i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión</h4>
+      </div>
+      <div class="card-body">
+        {% if get_flashed_messages() %} {% for message in
+        get_flashed_messages(with_categories=true) %}
+        <div
+          class="alert alert-{{ 'danger' if message[0] == 'error' else message[0] }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message[1] }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+        {% endfor %} {% endif %}
+
+        <form method="POST" action="{{ url_for('main.login') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+          <div class="mb-3">
+            <label for="email" class="form-label">Correo Electrónico</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              required
+            />
+          </div>
+
+          <div class="mb-3 form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="remember_me"
+              name="remember_me"
+            />
+            <label class="form-check-label" for="remember_me">Recordarme</label>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+            </button>
+          </div>
+        </form>
+
+        <!-- Credenciales de prueba -->
+        <div class="mt-4 p-3 bg-light rounded">
+          <h6 class="text-muted">🔑 Credenciales de prueba:</h6>
+          <div class="small">
+            <strong>Administrador:</strong> admin@colegiocolombia.edu.co /
+            admin123<br />
+            <strong>Profesor:</strong> maria.garcia@colegiocolombia.edu.co /
+            profesor123<br />
+            <strong>Estudiante:</strong>
+            juan.pérez@estudiante.colegiocolombia.edu.co / estudiante123
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auto-rellenar con credenciales de admin para pruebas
+  document.addEventListener("DOMContentLoaded", function () {
+    const emailField = document.getElementById("email");
+    const passwordField = document.getElementById("password");
+
+    // Si los campos están vacíos, pre-llenar con admin
+    if (!emailField.value && !passwordField.value) {
+      emailField.value = "admin@colegiocolombia.edu.co";
+      passwordField.value = "admin123";
+    }
+  });
+</script>
+{% endblock %}

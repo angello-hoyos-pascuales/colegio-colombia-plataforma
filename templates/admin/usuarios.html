@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Usuarios - Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-users text-primary me-2"></i>
+            Gestión de Usuarios
+        </h1>
+        <div>
+            <a href="{{ url_for('admin.nuevo_usuario') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Nuevo Usuario
+            </a>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Filtrar por Rol:</label>
+                    <select class="form-select" onchange="filtrarUsuarios(this.value)">
+                        <option value="">Todos los roles</option>
+                        <option value="administrador" {% if rol_filtro == 'admin' %}selected{% endif %}>Administradores</option>
+                        <option value="profesor" {% if rol_filtro == 'profesor' %}selected{% endif %}>Profesores</option>
+                        <option value="estudiante" {% if rol_filtro == 'estudiante' %}selected{% endif %}>Estudiantes</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Filtrar Profesores por Materia:</label>
+                    <select class="form-select" onchange="filtrarPorMateria(this.value)">
+                        <option value="">Todas las materias</option>
+                        {% if materias %}
+                            {% for materia in materias %}
+                                <option value="{{ materia }}" {% if materia_filtro == materia %}selected{% endif %}>{{ materia }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Buscar Usuario:</label>
+                    <input type="text" class="form-control" id="buscarUsuario" placeholder="Buscar por nombre, email o documento...">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="btn-group w-100">
+                        <button class="btn btn-outline-primary" onclick="exportarUsuarios()">
+                            <i class="fas fa-download me-1"></i>Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Usuarios</h6>
+                            <h2 class="mb-0">{{ usuarios.total }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">En esta página</h6>
+                            <h2 class="mb-0">{{ usuarios.items|length }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chalkboard-teacher fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Página Actual</h6>
+                            <h2 class="mb-0">{{ usuarios.page }} de {{ usuarios.pages }}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-user-graduate fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Lista de Usuarios</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if usuarios.items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="tablaUsuarios">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Avatar</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Documento</th>
+                            <th>Rol</th>
+                            <th>Información Adicional</th>
+                            <th>Estado</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios.items %}
+                        <tr>
+                            <td>
+                                <div class="avatar-sm">
+                                    {% if usuario.role == 'admin' %}
+                                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user-shield"></i>
+                                        </div>
+                                    {% elif usuario.role == 'profesor' %}
+                                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-chalkboard-teacher"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ usuario.nombre }} {{ usuario.apellido }}</strong>
+                                    {% if usuario.role == 'estudiante' and usuario.curso %}
+                                        <br><small class="text-muted">{{ usuario.curso.nombre }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-break">{{ usuario.email }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    {{ usuario.tipo_documento }}: {{ usuario.numero_documento }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if usuario.role == 'admin' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-user-shield me-1"></i>Administrador
+                                    </span>
+                                {% elif usuario.role == 'profesor' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-chalkboard-teacher me-1"></i>Profesor
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-user-graduate me-1"></i>Estudiante
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if usuario.role == 'estudiante' and usuario.curso %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-graduation-cap me-1"></i>{{ usuario.curso.nombre }}
+                                    </small>
+                                {% elif usuario.role == 'profesor' and usuario.materia_especialidad %}
+                                    <small class="text-primary">
+                                        <i class="fas fa-book me-1"></i>{{ usuario.materia_especialidad }}
+                                    </small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if usuario.activo %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Activo
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-pause-circle me-1"></i>Inactivo
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ usuario.fecha_creacion.strftime('%d/%m/%Y') }}
+                                </small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#verUsuarioModal{{ usuario.id }}"
+                                            title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <a href="{{ url_for('admin.editar_usuario', id=usuario.id) }}" 
+                                       class="btn btn-outline-warning" 
+                                       title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if current_user.id != usuario.id %}
+                                    <button class="btn btn-outline-danger" 
+                                            onclick="confirmarEliminacion({{ usuario.id }}, '{{ usuario.nombre }} {{ usuario.apellido }}')"
+                                            title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Paginación -->
+            {% if usuarios.pages > 1 %}
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">
+                            Mostrando {{ ((usuarios.page - 1) * usuarios.per_page) + 1 }} a 
+                            {{ usuarios.page * usuarios.per_page if usuarios.page < usuarios.pages else usuarios.total }} 
+                            de {{ usuarios.total }} usuarios
+                        </small>
+                    </div>
+                    <nav aria-label="Paginación de usuarios">
+                        <ul class="pagination pagination-sm mb-0">
+                            {% if usuarios.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.usuarios', page=usuarios.prev_num, rol=rol_filtro) }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in usuarios.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    {% if page_num != usuarios.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('admin.usuarios', page=page_num, rol=rol_filtro) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if usuarios.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.usuarios', page=usuarios.next_num, rol=rol_filtro) }}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5>No hay usuarios registrados</h5>
+                <p class="text-muted">Comienza creando tu primer usuario</p>
+                <a href="{{ url_for('admin.nuevo_usuario') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Crear Usuario
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modales para Ver Detalles -->
+{% for usuario in usuarios.items %}
+<div class="modal fade" id="verUsuarioModal{{ usuario.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user me-2"></i>
+                    {{ usuario.nombre }} {{ usuario.apellido }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Email:</strong><br>
+                        <span class="text-break">{{ usuario.email }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Documento:</strong><br>
+                        {{ usuario.tipo_documento }}: {{ usuario.numero_documento }}
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Rol:</strong><br>
+                        {{ usuario.role.title() }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Estado:</strong><br>
+                        {% if usuario.activo %}
+                            <span class="text-success">Activo</span>
+                        {% else %}
+                            <span class="text-warning">Inactivo</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Fecha de Registro:</strong><br>
+                        {{ usuario.fecha_creacion.strftime('%d de %B de %Y') }}
+                    </div>
+                    {% if usuario.role == 'estudiante' and usuario.curso %}
+                    <div class="col-md-6">
+                        <strong>Curso:</strong><br>
+                        {{ usuario.curso.nombre }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('admin.editar_usuario', id=usuario.id) }}" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i>Editar Usuario
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="confirmarEliminacionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar al usuario <strong id="nombreUsuarioEliminar"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Esta acción no se puede deshacer.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" id="formEliminarUsuario" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Eliminar Usuario
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para filtrar usuarios
+function filtrarUsuarios(rol) {
+    const url = new URL(window.location);
+    if (rol) {
+        url.searchParams.set('rol', rol);
+    } else {
+        url.searchParams.delete('rol');
+    }
+    window.location.href = url.toString();
+}
+
+// Función para filtrar profesores por materia
+function filtrarPorMateria(materia) {
+    const url = new URL(window.location);
+    if (materia) {
+        url.searchParams.set('materia', materia);
+    } else {
+        url.searchParams.delete('materia');
+    }
+    window.location.href = url.toString();
+}
+
+// Función para buscar usuarios
+document.getElementById('buscarUsuario').addEventListener('input', function() {
+    const filtro = this.value.toLowerCase();
+    const tabla = document.getElementById('tablaUsuarios');
+    const filas = tabla.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    for (let i = 0; i < filas.length; i++) {
+        const fila = filas[i];
+        const texto = fila.textContent.toLowerCase();
+        fila.style.display = texto.includes(filtro) ? '' : 'none';
+    }
+});
+
+// Función para confirmar eliminación
+function confirmarEliminacion(id, nombre) {
+    document.getElementById('nombreUsuarioEliminar').textContent = nombre;
+    document.getElementById('formEliminarUsuario').action = '/admin/usuarios/' + id + '/eliminar';
+    new bootstrap.Modal(document.getElementById('confirmarEliminacionModal')).show();
+}
+
+// Función para exportar usuarios
+function exportarUsuarios() {
+    window.location.href = '{{ url_for("admin.usuarios") }}?exportar=excel';
+}
+</script>
+{% endblock %}

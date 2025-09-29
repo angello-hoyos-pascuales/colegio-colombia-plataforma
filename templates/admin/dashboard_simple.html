@@ -1,0 +1,93 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Dashboard de Administrador</h2>
+
+      <!-- Estadísticas básicas -->
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white">
+            <div class="card-body">
+              <h5>Total Usuarios</h5>
+              <h3>{{ total_usuarios or 0 }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-success text-white">
+            <div class="card-body">
+              <h5>Estudiantes</h5>
+              <h3>{{ total_estudiantes or 0 }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white">
+            <div class="card-body">
+              <h5>Profesores</h5>
+              <h3>{{ total_profesores or 0 }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-white">
+            <div class="card-body">
+              <h5>Cursos</h5>
+              <h3>{{ total_cursos or 0 }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones rápidas -->
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5>Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+              <a
+                href="{{ url_for('admin.usuarios') }}"
+                class="btn btn-primary btn-block mb-2"
+                >Gestionar Usuarios</a
+              >
+              <a
+                href="{{ url_for('admin.cursos') }}"
+                class="btn btn-success btn-block mb-2"
+                >Gestionar Cursos</a
+              >
+              <a
+                href="{{ url_for('admin.asignaturas') }}"
+                class="btn btn-info btn-block mb-2"
+                >Gestionar Asignaturas</a
+              >
+              <a
+                href="{{ url_for('admin.reportar_ausencia') }}"
+                class="btn btn-warning btn-block"
+                >Reportar Ausencia</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5>Sistema Funcionando</h5>
+            </div>
+            <div class="card-body">
+              <p class="alert alert-success">
+                ✅ Dashboard cargado correctamente<br />
+                ✅ Base de datos conectada<br />
+                ✅ Autenticación funcionando<br />
+                ✅ Roles verificados
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

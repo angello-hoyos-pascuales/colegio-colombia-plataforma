@@ -1,0 +1,241 @@
+{% extends "base.html" %} {% block title %}Responder Reemplazo - Profesor{%
+endblock %} {% block content %}
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-reply me-2"></i>
+            Responder Solicitud de Reemplazo
+          </h4>
+        </div>
+        <div class="card-body">
+          <!-- Información de la solicitud -->
+          <div class="alert alert-info" role="alert">
+            <h6 class="alert-heading">
+              <i class="fas fa-info-circle me-2"></i>
+              Información de la Solicitud
+            </h6>
+            <hr />
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1">
+                  <strong>Profesor Ausente:</strong> {{
+                  notificacion.profesor_ausente.nombre_completo }}
+                </p>
+                <p class="mb-1">
+                  <strong>Curso Afectado:</strong> {{
+                  notificacion.curso_afectado }}
+                </p>
+                <p class="mb-1">
+                  <strong>Fecha de Ausencia:</strong>
+                  {{ notificacion.fecha_ausencia.strftime('%d/%m/%Y') if
+                  notificacion.fecha_ausencia else 'No especificada' }}
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-1">
+                  <strong>Asignatura:</strong> {{
+                  notificacion.asignatura_afectada or 'No especificada' }}
+                </p>
+                <p class="mb-1">
+                  <strong>Hora:</strong> {{ notificacion.hora_clase or 'No
+                  especificada' }}
+                </p>
+                <p class="mb-1">
+                  <strong>Solicitado:</strong> {{
+                  notificacion.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {% if notificacion.motivo_ausencia %}
+          <div class="mb-4">
+            <h6>Motivo de la Ausencia:</h6>
+            <div class="alert alert-light">
+              {{ notificacion.motivo_ausencia }}
+            </div>
+          </div>
+          {% endif %} {% if notificacion.instrucciones_reemplazo %}
+          <div class="mb-4">
+            <h6>Instrucciones para el Reemplazo:</h6>
+            <div class="alert alert-light">
+              {{ notificacion.instrucciones_reemplazo }}
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Formulario de respuesta -->
+          <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              <label class="form-label">
+                <strong>Tu Respuesta:</strong>
+              </label>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="respuesta"
+                  id="aceptar"
+                  value="aceptar"
+                  required
+                />
+                <label class="form-check-label text-success" for="aceptar">
+                  <i class="fas fa-check-circle me-2"></i>
+                  <strong>Acepto</strong> cubrir esta clase
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="respuesta"
+                  id="declinar"
+                  value="declinar"
+                  required
+                />
+                <label class="form-check-label text-danger" for="declinar">
+                  <i class="fas fa-times-circle me-2"></i>
+                  <strong>No puedo</strong> cubrir esta clase
+                </label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              {{ form.comentarios.label(class="form-label") }} {{
+              form.comentarios(class="form-control", rows="3",
+              placeholder="Comentarios adicionales sobre tu respuesta...") }} {%
+              if form.comentarios.errors %}
+              <div class="text-danger">
+                {% for error in form.comentarios.errors %}
+                <small>{{ error }}</small>
+                {% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Puedes agregar comentarios sobre tu disponibilidad o
+                sugerencias.
+              </div>
+            </div>
+
+            <!-- Campos adicionales para aceptación -->
+            <div id="campos-aceptacion" class="d-none">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">Información Adicional (Opcional)</h6>
+
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="hora-llegada" class="form-label"
+                        >Hora estimada de llegada:</label
+                      >
+                      <input
+                        type="time"
+                        id="hora-llegada"
+                        name="hora_llegada"
+                        class="form-control"
+                      />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="duracion-disponible" class="form-label"
+                        >Tiempo disponible:</label
+                      >
+                      <select
+                        id="duracion-disponible"
+                        name="duracion_disponible"
+                        class="form-select"
+                      >
+                        <option value="">Seleccionar...</option>
+                        <option value="45min">45 minutos (1 clase)</option>
+                        <option value="90min">90 minutos (2 clases)</option>
+                        <option value="toda-jornada">Toda la jornada</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="material-necesario" class="form-label"
+                      >¿Necesitas algún material especial?</label
+                    >
+                    <textarea
+                      id="material-necesario"
+                      name="material_necesario"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Ej: Computador, proyector, materiales específicos..."
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a
+                href="{{ url_for('profesor.notificaciones') }}"
+                class="btn btn-secondary"
+              >
+                <i class="fas fa-arrow-left me-2"></i>Volver a Notificaciones
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane me-2"></i>Enviar Respuesta
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const radioButtons = document.querySelectorAll('input[name="respuesta"]');
+    const camposAceptacion = document.getElementById("campos-aceptacion");
+
+    radioButtons.forEach((radio) => {
+      radio.addEventListener("change", function () {
+        if (this.value === "aceptar") {
+          camposAceptacion.classList.remove("d-none");
+        } else {
+          camposAceptacion.classList.add("d-none");
+        }
+      });
+    });
+
+    // Auto-resize para textarea
+    const comentarios = document.getElementById("comentarios");
+    if (comentarios) {
+      comentarios.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = this.scrollHeight + "px";
+      });
+    }
+  });
+</script>
+
+<style>
+  .form-check {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+  }
+
+  .form-check:hover {
+    background-color: #f8f9fa;
+  }
+
+  .form-check-input:checked + .form-check-label {
+    font-weight: bold;
+  }
+
+  .card-body .alert {
+    border-left: 4px solid #17a2b8;
+  }
+</style>
+{% endblock %}

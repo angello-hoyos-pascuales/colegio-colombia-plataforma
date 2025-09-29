@@ -1,0 +1,406 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <!-- Header del Dashboard -->
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2>
+          <i class="fas fa-user-graduate text-info me-2"></i>Dashboard del
+          Estudiante
+        </h2>
+        <p class="text-muted">Bienvenido, {{ current_user.nombre_completo }}</p>
+      </div>
+      <div class="text-end">
+        <small class="text-muted">
+          <i class="fas fa-id-card me-1"></i>
+          {{ current_user.tipo_documento }}: {{ current_user.numero_documento }}
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Módulos del Estudiante -->
+  <div class="col-12">
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <h4 class="mb-3">
+          <i class="fas fa-graduation-cap text-info me-2"></i>Mis Módulos de
+          Aprendizaje
+        </h4>
+      </div>
+
+      <!-- Mis Cursos -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-info rounded p-2 me-3">
+                <i class="fas fa-school fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Mis Cursos</h5>
+                <small class="text-muted">Materias matriculadas</small>
+              </div>
+            </div>
+            <div class="mb-2">
+              <span class="badge bg-info">{{ cursos|length }} cursos</span>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('estudiante.dashboard') }}"
+                class="btn btn-info btn-sm"
+              >
+                <i class="fas fa-list me-1"></i>Ver Cursos
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tareas Pendientes -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-warning rounded p-2 me-3">
+                <i class="fas fa-tasks fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Tareas</h5>
+                <small class="text-muted">Entregas y actividades</small>
+              </div>
+            </div>
+            <div class="mb-2">
+              <span class="badge bg-warning text-dark"
+                >{{ tareas_pendientes|length if tareas_pendientes else 0 }}
+                pendientes</span
+              >
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('estudiante.tareas') }}"
+                class="btn btn-warning btn-sm me-2"
+              >
+                <i class="fas fa-list me-1"></i>Mis Tareas
+              </a>
+              <a
+                href="{{ url_for('estudiante.tareas') }}"
+                class="btn btn-outline-warning btn-sm"
+              >
+                <i class="fas fa-upload me-1"></i>Entregar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mis Calificaciones -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-success rounded p-2 me-3">
+                <i class="fas fa-chart-line fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Mis Notas</h5>
+                <small class="text-muted">Calificaciones y promedios</small>
+              </div>
+            </div>
+            <div class="mb-2">
+              <span class="badge bg-success"
+                >Promedio: {{ promedio_general|round(2) }}</span
+              >
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('estudiante.calificaciones') }}"
+                class="btn btn-success btn-sm me-2"
+              >
+                <i class="fas fa-star me-1"></i>Ver Notas
+              </a>
+              <a
+                href="{{ url_for('estudiante.calificaciones') }}"
+                class="btn btn-outline-success btn-sm"
+              >
+                <i class="fas fa-file-alt me-1"></i>Boletín
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mi Horario -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm module-card">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+              <div class="bg-primary rounded p-2 me-3">
+                <i class="fas fa-calendar-alt fa-lg text-white"></i>
+              </div>
+              <div>
+                <h5 class="card-title mb-0">Mi Horario</h5>
+                <small class="text-muted">Clases programadas</small>
+              </div>
+            </div>
+            <div class="mb-2">
+              <span class="badge bg-primary">{{ clases_hoy }} clases hoy</span>
+            </div>
+            <div class="module-actions">
+              <a
+                href="{{ url_for('estudiante.horario') }}"
+                class="btn btn-primary btn-sm"
+              >
+                <i class="fas fa-calendar me-1"></i>Ver Horario
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas principales -->
+  <div class="col-12">
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <h4 class="mb-3">
+          <i class="fas fa-chart-pie text-success me-2"></i>Mi Rendimiento
+          Académico
+        </h4>
+      </div>
+      <div class="col-md-3">
+        <div class="dashboard-card">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-primary me-3">{{ cursos|length }}</div>
+            <div>
+              <div class="stat-label">Cursos</div>
+              <small class="text-muted">Matriculado</small>
+            </div>
+            <div class="ms-auto">
+              <i class="fas fa-school fa-2x text-primary opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="dashboard-card warning">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-warning me-3">
+              {{ tareas_pendientes|length }}
+            </div>
+            <div>
+              <div class="stat-label">Tareas Pendientes</div>
+              <small class="text-muted">Por entregar</small>
+            </div>
+            <div class="ms-auto">
+              <i class="fas fa-clock fa-2x text-warning opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="dashboard-card danger">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-danger me-3">
+              {{ tareas_vencidas }}
+            </div>
+            <div>
+              <div class="stat-label">Tareas Vencidas</div>
+              <small class="text-muted">Sin entregar</small>
+            </div>
+            <div class="ms-auto">
+              <i
+                class="fas fa-exclamation-triangle fa-2x text-danger opacity-25"
+              ></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="dashboard-card success">
+          <div class="d-flex align-items-center">
+            <div class="stat-number text-success me-3">
+              {{ calificaciones_recientes|length if calificaciones_recientes
+              else 0 }}
+            </div>
+            <div>
+              <div class="stat-label">Calificaciones</div>
+              <small class="text-muted">Recientes</small>
+            </div>
+            <div class="ms-auto">
+              <i class="fas fa-chart-line fa-2x text-success opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tareas pendientes urgentes -->
+  {% if tareas_vencidas > 0 %}
+  <div class="col-12 mb-4">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      <strong>¡Atención!</strong> Tienes {{ tareas_vencidas }} tarea(s)
+      vencida(s) sin entregar.
+      <a
+        href="{{ url_for('estudiante.tareas', estado='vencidas') }}"
+        class="alert-link"
+        >Ver detalles</a
+      >
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Contenido principal -->
+  <div class="col-md-8">
+    <!-- Tareas próximas a vencer -->
+    {% if tareas_pendientes %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5><i class="fas fa-clock me-2"></i>Próximas Tareas</h5>
+      </div>
+      <div class="card-body">
+        {% for tarea in tareas_pendientes %}
+        <div class="tarea-card">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h6 class="mb-1">{{ tarea.titulo }}</h6>
+              <small class="text-muted"
+                >{{ tarea.asignatura.nombre }} - {{
+                tarea.asignatura.curso.nombre_completo }}</small
+              >
+            </div>
+            <span class="badge bg-warning">
+              <i class="fas fa-calendar me-1"></i>
+              {{ tarea.fecha_entrega.strftime('%d/%m') }}
+            </span>
+          </div>
+          <p class="mb-2">
+            {{ tarea.descripcion[:100] }}{% if tarea.descripcion|length > 100
+            %}...{% endif %}
+          </p>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="tarea-fecha">
+              Vence: {{ tarea.fecha_entrega.strftime('%d/%m/%Y a las %H:%M') }}
+            </small>
+            <a
+              href="{{ url_for('estudiante.detalle_tarea', id=tarea.id) }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              Ver Tarea
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="text-center mt-3">
+          <a href="{{ url_for('estudiante.tareas') }}" class="btn btn-primary">
+            <i class="fas fa-list me-1"></i>Ver Todas las Tareas
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Acciones rápidas -->
+    <div class="card">
+      <div class="card-header">
+        <h5><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('estudiante.tareas') }}"
+              class="btn btn-outline-primary w-100"
+            >
+              <i class="fas fa-tasks me-2"></i>Mis Tareas
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('estudiante.calificaciones') }}"
+              class="btn btn-outline-success w-100"
+            >
+              <i class="fas fa-chart-line me-2"></i>Calificaciones
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('estudiante.horario') }}"
+              class="btn btn-outline-info w-100"
+            >
+              <i class="fas fa-calendar me-2"></i>Mi Horario
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('estudiante.perfil') }}"
+              class="btn btn-outline-secondary w-100"
+            >
+              <i class="fas fa-user me-2"></i>Mi Perfil
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel lateral -->
+  <div class="col-md-4">
+    <!-- Calificaciones recientes -->
+    {% if calificaciones_recientes %}
+    <div class="card mb-4">
+      <div class="card-header">
+        <h6><i class="fas fa-star me-2"></i>Calificaciones Recientes</h6>
+      </div>
+      <div class="card-body">
+        {% for calificacion in calificaciones_recientes %}
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>{{ calificacion.tarea.asignatura.nombre }}</strong><br />
+              <small class="text-muted">{{ calificacion.tarea.titulo }}</small>
+            </div>
+            <span
+              class="nota {% if calificacion.nota >= 4.5 %}excelente{% elif calificacion.nota >= 4.0 %}buena{% elif calificacion.nota >= 3.0 %}regular{% else %}mala{% endif %}"
+            >
+              {{ "%.1f"|format(calificacion.nota) }}
+            </span>
+          </div>
+          <small class="text-muted"
+            >{{ calificacion.fecha_calificacion.strftime('%d/%m/%Y') }}</small
+          >
+        </div>
+        {% if not loop.last %}
+        <hr />
+        {% endif %} {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Información del curso -->
+    {% if cursos %}
+    <div class="card">
+      <div class="card-header">
+        <h6><i class="fas fa-school me-2"></i>Mi Curso</h6>
+      </div>
+      <div class="card-body">
+        {% for curso in cursos %}
+        <div class="text-center">
+          <h4 class="text-primary">{{ curso.nombre_completo }}</h4>
+          <p class="text-muted">Año {{ curso.año_academico }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
